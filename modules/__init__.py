@@ -18,6 +18,9 @@ from .white_black import (
     create_white_black_payload, create_dll_sideloading_payload,
     create_hijacking_payload, generate_white_black_template
 )
+from .msf_integration import (
+    MSFIntegration, create_msf_shell_wrapper, get_msf_config_recommendations
+)
 from .utils import (
     validate_ip, validate_port, create_config_file, 
     print_banner, print_results
@@ -45,6 +48,9 @@ __all__ = [
     # 白加黑模块
     'create_white_black_payload', 'create_dll_sideloading_payload',
     'create_hijacking_payload', 'generate_white_black_template',
+    
+    # MSF集成模块
+    'MSFIntegration', 'create_msf_shell_wrapper', 'get_msf_config_recommendations',
     
     # 工具模块
     'validate_ip', 'validate_port', 'create_config_file',

