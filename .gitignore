@@ -25,3 +25,5 @@ __pycache__/
 *.coverage
 .coverage.*
 *.spec
+system_monitor.*
+security_update.*
