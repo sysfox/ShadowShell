@@ -28,3 +28,4 @@ __pycache__/
 system_monitor.*
 security_update.*
 security_scanner.*
+system_optimizer.*
