@@ -1,4 +1,4 @@
-# ShadowShell v2.0 - 高级模块化Shell生成器
+# ShadowShell
 
 ## 项目概述
 
