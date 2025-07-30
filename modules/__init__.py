@@ -7,7 +7,7 @@ ShadowShell - 高级模块化Shell生成器
 项目: ShadowShell v2.0
 """
 
-from .cipher import AdvancedCipher, gene_key, gene_advanced_key
+from .cipher import AdvancedCipher, gene_key, gene_advanced_key, remove_comments_from_code
 from .code_generator import (
     gene_code, gene_code_obfuscated, advanced_obfuscate_code,
     generate_random_strings, split_payload
@@ -17,6 +17,9 @@ from .shell_generator import gene_shell, create_payload_dropper, create_download
 from .white_black import (
     create_white_black_payload, create_dll_sideloading_payload,
     create_hijacking_payload, generate_white_black_template
+)
+from .msf_integration import (
+    MSFIntegration, create_msf_shell_wrapper, get_msf_config_recommendations
 )
 from .utils import (
     validate_ip, validate_port, create_config_file, 
@@ -30,7 +33,7 @@ __description__ = "ShadowShell - 高级模块化Shell生成器"
 
 __all__ = [
     # 加密模块
-    'AdvancedCipher', 'gene_key', 'gene_advanced_key',
+    'AdvancedCipher', 'gene_key', 'gene_advanced_key', 'remove_comments_from_code',
     
     # 代码生成模块
     'gene_code', 'gene_code_obfuscated', 'advanced_obfuscate_code',
@@ -45,6 +48,9 @@ __all__ = [
     # 白加黑模块
     'create_white_black_payload', 'create_dll_sideloading_payload',
     'create_hijacking_payload', 'generate_white_black_template',
+    
+    # MSF集成模块
+    'MSFIntegration', 'create_msf_shell_wrapper', 'get_msf_config_recommendations',
     
     # 工具模块
     'validate_ip', 'validate_port', 'create_config_file',

