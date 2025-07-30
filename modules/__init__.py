@@ -13,7 +13,7 @@ from .code_generator import (
     generate_random_strings, split_payload
 )
 from .anti_detection import create_advanced_evasion_code
-from .shell_generator import gene_shell, create_payload_dropper
+from .shell_generator import gene_shell, create_payload_dropper, create_downloader
 from .utils import (
     validate_ip, validate_port, create_config_file, 
     print_banner, print_results
@@ -36,7 +36,7 @@ __all__ = [
     'create_advanced_evasion_code',
     
     # Shell生成模块
-    'gene_shell', 'create_payload_dropper',
+    'gene_shell', 'create_payload_dropper', 'create_downloader',
     
     # 工具模块
     'validate_ip', 'validate_port', 'create_config_file',

