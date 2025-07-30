@@ -44,7 +44,7 @@ def create_config_file(ip, port, key, filepath):
 
 def print_banner():
     """打印程序横幅"""
-    banner = """
+    banner = r"""
   ____  _               _                ____  _          _ _ 
  / ___|| |__   __ _  __| | _____      __/ ___|| |__   ___| | |
  \___ \| '_ \ / _` |/ _` |/ _ \ \ /\ / /\___ \| '_ \ / _ \ | |
