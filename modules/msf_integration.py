@@ -29,7 +29,7 @@ class MSFIntegration:
             '/usr/bin/msfvenom',
             '/opt/metasploit-framework/bin/msfvenom',
             '/usr/local/bin/msfvenom',
-            'msfvenom'  # 在PATH中查找
+            'msfvenom'
         ]
         
         for path in possible_paths:

@@ -7,7 +7,7 @@ ShadowShell - 高级模块化Shell生成器
 项目: ShadowShell v2.0
 """
 
-from .cipher import AdvancedCipher, gene_key, gene_advanced_key
+from .cipher import AdvancedCipher, gene_key, gene_advanced_key, remove_comments_from_code
 from .code_generator import (
     gene_code, gene_code_obfuscated, advanced_obfuscate_code,
     generate_random_strings, split_payload
@@ -33,7 +33,7 @@ __description__ = "ShadowShell - 高级模块化Shell生成器"
 
 __all__ = [
     # 加密模块
-    'AdvancedCipher', 'gene_key', 'gene_advanced_key',
+    'AdvancedCipher', 'gene_key', 'gene_advanced_key', 'remove_comments_from_code',
     
     # 代码生成模块
     'gene_code', 'gene_code_obfuscated', 'advanced_obfuscate_code',

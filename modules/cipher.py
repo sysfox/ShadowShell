@@ -73,57 +73,57 @@ class AdvancedCipher:
             return ""
     
     def multi_layer_encrypt(self, data):
-        """多层加密"""
-        # 添加随机前缀避免确定性加密
+        """多层加密（简化但更可靠的版本）"""
         nonce = os.urandom(8).hex()
         data_with_nonce = f"{nonce}:{data}"
         
         # 第一层：XOR加密
         stage1 = self.xor_encrypt(data_with_nonce)
         
-        # 第二层：原始加密算法 
-        stage2 = self.encrypt(stage1)
+        # 第二层：Base64编码（避免使用复杂的基础加密算法）
+        stage2 = base64.b64encode(stage1.encode()).decode()
         
-        # 第三层：Base64 + 压缩
+        # 第三层：压缩 + Base64
         stage3 = base64.b64encode(zlib.compress(stage2.encode())).decode()
         
         return stage3
     
     def multi_layer_decrypt(self, encrypted_data):
-        """多层解密 - 使用更简单有效的方法"""
+        """多层解密（对应简化版本）"""
         try:
             # 第一步：Base64解码 + 解压缩
             stage1_decoded = base64.b64decode(encrypted_data.encode())
             stage1_decompressed = zlib.decompress(stage1_decoded).decode()
             
-            # 第二步：跳过基本解密，直接进行XOR解密
-            # （因为基本加密主要用于混淆，实际安全性来自XOR和多层结构）
-            stage3 = self.xor_decrypt(stage1_decompressed)
+            # 第二步：Base64解码
+            stage2_decoded = base64.b64decode(stage1_decompressed.encode()).decode()
             
-            # 移除随机前缀 
+            # 第三步：XOR解密
+            stage3 = self.xor_decrypt(stage2_decoded)
+            
+            # 移除随机前缀
             if ':' in stage3:
-                nonce, original_data = stage3.split(':', 1)
+                _, original_data = stage3.split(':', 1)
                 return original_data
             return stage3
-        except Exception as e:
-            # 如果标准解密失败，尝试备用方法
+        except Exception:
+            # 备用解密方法（直接XOR）
             try:
-                # 备用解密：假设是直接XOR编码的base64
                 decoded = base64.b64decode(encrypted_data.encode())
                 result = ""
                 for i, byte in enumerate(decoded):
                     result += chr(byte ^ self.xor_key[i % len(self.xor_key)])
+                if ':' in result:
+                    return result.split(':', 1)[1]
                 return result
             except:
                 return ""
     
     def encrypt(self, data):
-        """改进的加密算法"""
+        """基础加密算法"""
         if data == "":
-            # 空字符串返回特殊标记而不是空
             return chr(1) + chr(2) + chr(3)
             
-        # 添加随机盐值增强安全性
         salt = os.urandom(4).hex()
         data_with_salt = f"{salt}|{data}"
         
@@ -162,25 +162,15 @@ class AdvancedCipher:
         return result
     
     def decrypt(self, encrypted_data):
-        """对应的解密算法 - 简化但有效的版本"""
+        """基础解密算法（占位符实现）"""
         if encrypted_data == chr(1) + chr(2) + chr(3):
             return ""
-            
-        # 由于原始加密算法复杂且难以完全逆转，
-        # 我们使用一种更实用的方法：
-        # 在实际使用中，我们主要依赖multi_layer_encrypt/decrypt
-        # 这里提供基本的占位符实现
-        
-        # 对于基本加密，我们返回一个标记表示需要使用多层解密
         return "[ENCRYPTED_DATA_USE_MULTILAYER]"
 
-
     def create_secure_payload(self, payload_code):
-        """创建安全的负载包装器"""
-        # 使用多层加密保护载荷
+        """创建安全的载荷包装器"""
         encrypted_payload = self.multi_layer_encrypt(payload_code)
         
-        # 生成解密和执行代码
         decrypt_code = f'''
 import base64, zlib, random
 
@@ -235,5 +225,25 @@ def gene_advanced_key(length=16, include_special=True):
         chars += "!@#$%^&*()_+-=[]{}|;:,.<>?"
     return ''.join(random.choice(chars) for _ in range(length))
 
-# 保持向下兼容
+
+def remove_comments_from_code(code):
+    """从代码中移除注释，确保加密前的代码干净"""
+    lines = code.split('\n')
+    cleaned_lines = []
+    
+    for line in lines:
+        stripped = line.strip()
+        if stripped.startswith('#'):
+            continue
+        if '#' in line and not ('"' in line or "'" in line):
+            line = line.split('#')[0].rstrip()
+        cleaned_lines.append(line)
+    
+    result = '\n'.join(cleaned_lines)
+    while '\n\n\n' in result:
+        result = result.replace('\n\n\n', '\n\n')
+    
+    return result.strip()
+
+
 Cipher = AdvancedCipher
