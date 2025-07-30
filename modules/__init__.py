@@ -14,6 +14,10 @@ from .code_generator import (
 )
 from .anti_detection import create_advanced_evasion_code
 from .shell_generator import gene_shell, create_payload_dropper, create_downloader
+from .white_black import (
+    create_white_black_payload, create_dll_sideloading_payload,
+    create_hijacking_payload, generate_white_black_template
+)
 from .utils import (
     validate_ip, validate_port, create_config_file, 
     print_banner, print_results
@@ -37,6 +41,10 @@ __all__ = [
     
     # Shell生成模块
     'gene_shell', 'create_payload_dropper', 'create_downloader',
+    
+    # 白加黑模块
+    'create_white_black_payload', 'create_dll_sideloading_payload',
+    'create_hijacking_payload', 'generate_white_black_template',
     
     # 工具模块
     'validate_ip', 'validate_port', 'create_config_file',

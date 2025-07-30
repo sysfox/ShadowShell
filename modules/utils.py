@@ -8,6 +8,8 @@ import os
 import json
 import hashlib
 import datetime
+import random
+import string
 
 
 def validate_ip(ip):
@@ -23,6 +25,11 @@ def validate_port(port):
         return 1 <= port_num <= 65535
     except ValueError:
         return False
+
+
+def generate_random_name(length=8):
+    """生成随机名称"""
+    return ''.join(random.choices(string.ascii_lowercase + string.digits, k=length))
 
 
 def create_config_file(ip, port, key, filepath):

