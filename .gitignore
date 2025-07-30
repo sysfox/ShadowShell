@@ -27,3 +27,4 @@ __pycache__/
 *.spec
 system_monitor.*
 security_update.*
+security_scanner.*
