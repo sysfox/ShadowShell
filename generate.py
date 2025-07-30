@@ -968,7 +968,7 @@ def main():
                 config['filename'],
                 config['persistence'],
                 config['anti_detection'],
-                config.get('silent_delay', 30)
+                config.get('silent_delay', 300)
             )
         
         # 创建配置文件
