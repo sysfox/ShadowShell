@@ -462,6 +462,7 @@ def command_line_mode():
     parser.add_argument('-f', '--filename', help='自定义文件名')
     parser.add_argument('--persistence', action='store_true', help='添加持久化功能')
     parser.add_argument('--anti-detection', action='store_true', help='添加反杀毒特征')
+    parser.add_argument('--daemon', action='store_true', help='启用守护进程模式(后台运行)')
     parser.add_argument('--use-dropper', action='store_true', help='使用分阶段执行模式')
     parser.add_argument('--use-white-black', action='store_true', help='使用白加黑技术')
     parser.add_argument('--white-black-mode', choices=['wrapper', 'sideloading', 'hijacking'], 
