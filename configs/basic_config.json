@@ -1,0 +1,14 @@
+{
+  "metadata": {
+    "version": "2.0",
+    "exported_at": "2025-07-31T13:31:18.922950",
+    "tool": "ShadowShell"
+  },
+  "config": {
+    "ip": "127.0.0.1",
+    "port": 4444,
+    "encryption_level": "basic",
+    "debug": true,
+    "strict_mode": false
+  }
+}

