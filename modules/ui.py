@@ -203,8 +203,35 @@ def modify_configuration_option(config, option):
                 config['use_msf'] = False
             else:
                 print("\n🎯 MSF载荷配置:")
+                print("推荐载荷类型:")
+                recommended_payloads = [
+                    "python/meterpreter/reverse_tcp",
+                    "python/meterpreter/reverse_https", 
+                    "windows/meterpreter/reverse_tcp",
+                    "linux/x64/meterpreter/reverse_tcp"
+                ]
+                recommended_display = [
+                    "1. python/meterpreter/reverse_tcp (推荐)",
+                    "2. python/meterpreter/reverse_https", 
+                    "3. windows/meterpreter/reverse_tcp",
+                    "4. linux/x64/meterpreter/reverse_tcp"
+                ]
+                for rec in recommended_display:
+                    print(f"   {rec}")
+                
                 msf_payload = input("MSF载荷类型 (默认: python/meterpreter/reverse_tcp) >>> ").strip()
-                config['msf_payload'] = msf_payload if msf_payload else "python/meterpreter/reverse_tcp"
+                if not msf_payload:
+                    msf_payload = "python/meterpreter/reverse_tcp"
+                elif msf_payload.isdigit():
+                    # 用户输入了数字，转换为对应的载荷类型
+                    choice = int(msf_payload)
+                    if 1 <= choice <= len(recommended_payloads):
+                        msf_payload = recommended_payloads[choice - 1]
+                        print(f"✅ 已选择: {msf_payload}")
+                    else:
+                        print(f"❌ 无效选择，使用默认载荷")
+                        msf_payload = "python/meterpreter/reverse_tcp"
+                config['msf_payload'] = msf_payload
                 
                 use_encoder = input("使用编码器? (Y/n) >>> ").strip().lower() != 'n'
                 if use_encoder:
@@ -344,19 +371,34 @@ def interactive_mode():
         else:
             print("\n🎯 MSF载荷配置:")
             print("推荐载荷类型:")
-            recommended = [
+            recommended_payloads = [
+                "python/meterpreter/reverse_tcp",
+                "python/meterpreter/reverse_https", 
+                "windows/meterpreter/reverse_tcp",
+                "linux/x64/meterpreter/reverse_tcp"
+            ]
+            recommended_display = [
                 "1. python/meterpreter/reverse_tcp (推荐)",
                 "2. python/meterpreter/reverse_https", 
                 "3. windows/meterpreter/reverse_tcp",
                 "4. linux/x64/meterpreter/reverse_tcp"
             ]
-            for rec in recommended:
+            for rec in recommended_display:
                 print(f"   {rec}")
             
             # 载荷选择
             msf_payload = input("MSF载荷类型 (默认: python/meterpreter/reverse_tcp) >>> ").strip()
             if not msf_payload:
                 msf_payload = "python/meterpreter/reverse_tcp"
+            elif msf_payload.isdigit():
+                # 用户输入了数字，转换为对应的载荷类型
+                choice = int(msf_payload)
+                if 1 <= choice <= len(recommended_payloads):
+                    msf_payload = recommended_payloads[choice - 1]
+                    print(f"✅ 已选择: {msf_payload}")
+                else:
+                    print(f"❌ 无效选择，使用默认载荷")
+                    msf_payload = "python/meterpreter/reverse_tcp"
             
             # 编码器选择 
             use_encoder = input("使用编码器? (Y/n) >>> ").strip().lower() != 'n'
