@@ -38,7 +38,9 @@ class MSFIntegration:
                                       capture_output=True, 
                                       text=True, 
                                       timeout=10)
-                if result.returncode == 0:
+                # msfvenom --help 返回退出码1，帮助信息输出到stderr，这是正常的
+                output = result.stdout + result.stderr
+                if result.returncode in [0, 1] and 'MsfVenom' in output:
                     return path
             except (subprocess.TimeoutExpired, subprocess.CalledProcessError, FileNotFoundError):
                 continue
